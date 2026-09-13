@@ -4,12 +4,13 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.web.util.UriBuilder;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
 @Setter
 @AllArgsConstructor
+@NoArgsConstructor
 public class FotoPerfil {
 
     @Id

@@ -1,9 +1,10 @@
 package com.exemplo.website.model;
 
+import com.exemplo.website.model.Enum.TipoInstituicao;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -16,22 +17,29 @@ public class Instituicao {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "nome")
+    @Column(name = "nome", nullable = false)
     private String nome;
 
-    @Column(name = "cnpj")
+    @Column(name = "cnpj", nullable = false, unique = true, length = 14)
     private String cnpj;
 
-    @Column(name = "email")
-    private String email;
-
-    @Column(name = "tipo_instituicao")
+    @Column(name = "tipo_instituicao", nullable = false)
     private TipoInstituicao tipoInstituicao;
 
-    @Column(name = "data_cricao")
-    private LocalDate dataCricao;
+    @Column(name = "dominio_email", nullable = false, unique = true)
+    private String dominioEmail;
 
-    @Column(name = "esta_ativo")
-    private Boolean estaAtivo;
+    @Column(name = "data_criacao", nullable = false)
+    private LocalDateTime dataCriacao;
 
+    @Column(name = "esta_ativo", nullable = false)
+    private Boolean estaAtivo = true;
+
+
+    @PrePersist
+    private void preencherDataCriacao() {
+        if (dataCriacao == null) {
+            dataCriacao = LocalDateTime.now();
+        }
+    }
 }

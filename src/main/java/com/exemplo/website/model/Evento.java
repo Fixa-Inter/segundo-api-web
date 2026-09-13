@@ -19,25 +19,39 @@ public class Evento {
     @Column(name = "id")
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "local_endereco_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "usuario_id", nullable = false)
+    private Usuario usuario;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "local_endereco_id", nullable = false)
     public LocalEndereco localEndereco;
 
-    @Column(name = "titulo")
+    @Column(name = "titulo", nullable = false)
     private String titulo;
 
-    @Column(name = "descricao")
+    @Column(name = "descricao", nullable = false)
     private String descricao;
 
-    @Column(name = "descricao_local")
+    @Column(name = "descricao_local", nullable = false)
     private String descricaoLocal;
 
     @Column(name = "observacao")
     private String observacao;
 
-    @Column(name = "data_hora_inicio")
+    @Column(name = "data_hora_inicio", nullable = false)
     private LocalDateTime dataHoraInicio;
 
-    @Column(name = "data_hora_fim")
+    @Column(name = "data_hora_fim", nullable = false)
     private LocalDateTime dataHoraFim;
+
+    @Column(name = "data_criacao", nullable = false)
+    private LocalDateTime dataCriacao;
+
+    @PrePersist
+    private void preencherDataCriacao() {
+        if (dataCriacao == null) {
+            dataCriacao = LocalDateTime.now();
+        }
+    }
 }

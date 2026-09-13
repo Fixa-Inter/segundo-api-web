@@ -7,7 +7,7 @@ import lombok.Setter;
 
 import jakarta.persistence.*;
 
-@Entity
+// Fora do escopo de persistência da API web.
 @Getter
 @Setter
 @AllArgsConstructor
