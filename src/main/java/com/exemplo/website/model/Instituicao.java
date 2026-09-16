@@ -20,8 +20,6 @@ public class Instituicao {
     @Column(name = "nome", nullable = false)
     private String nome;
 
-    @Column(name = "cnpj", nullable = false, unique = true, length = 14)
-    private String cnpj;
 
     @Column(name = "tipo_instituicao", nullable = false)
     private TipoInstituicao tipoInstituicao;

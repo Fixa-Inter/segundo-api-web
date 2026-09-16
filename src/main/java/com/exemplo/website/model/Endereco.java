@@ -47,6 +47,9 @@ public class Endereco {
     @Column(name = "cep", nullable = false, length = 8)
     private String cep;
 
+    @Column(name = "cnpj", nullable = false, unique = true, length = 14)
+    private String cnpj;
+
     @Column(name = "data_criacao", nullable = false)
     private LocalDateTime dataCriacao;
 
