@@ -21,9 +21,6 @@ public class Usuario {
     @Column(name = "id")
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "gerente_id")
-    private Usuario gerente;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "endereco_id", nullable = false)
@@ -53,7 +50,6 @@ public class Usuario {
 
     @Column(name = "primeiro_acesso", nullable = false)
     private Boolean primeiroAcesso = true;
-
 
 
     @PrePersist
