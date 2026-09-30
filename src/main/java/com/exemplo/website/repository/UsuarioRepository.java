@@ -1,6 +1,5 @@
 package com.exemplo.website.repository;
 
-
 import com.exemplo.website.model.Enum.TipoAcesso;
 import com.exemplo.website.model.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,4 +17,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
             String cnpj,
             TipoAcesso tipoAcesso
     );
+
+    boolean existsByEmail(String email);
+
+    boolean existsByEmailAndIdNot(String email, Long id);
 }
