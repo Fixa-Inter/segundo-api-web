@@ -1,5 +1,3 @@
-package com.exemplo.website.dto.usuario;
-
 import com.exemplo.website.model.Enum.TipoAcesso;
 
 import java.time.LocalDate;
@@ -9,6 +7,7 @@ public record UsuarioUpdateRequest(
         String nomeCompleto,
         String email,
         TipoAcesso tipoAcesso,
+        String cargo,
         LocalDate dataNascimento
 ) {
 }
