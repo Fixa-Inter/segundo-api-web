@@ -1,20 +1,17 @@
-package com.exemplo.website.dto.usuario;
+package com.exemplo.website.dto.perfil;
 
+import com.exemplo.website.dto.foto.FotoResponse;
 import com.exemplo.website.model.Enum.TipoAcesso;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
-public record UsuarioResponse(
+public record PerfilResponse(
         Long id,
-        Long enderecoId,
         String nomeCompleto,
         String email,
         TipoAcesso tipoAcesso,
         String cargo,
         LocalDate dataNascimento,
-        LocalDateTime dataCriacao,
-        Boolean estaAtivo,
-        Boolean primeiroAcesso
+        FotoResponse foto
 ) {
 }
