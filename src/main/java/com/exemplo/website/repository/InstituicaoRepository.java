@@ -4,4 +4,9 @@ import com.exemplo.website.model.Instituicao;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface InstituicaoRepository extends JpaRepository<Instituicao, Long> {
+
+    boolean existsByDominioEmail(String dominioEmail);
+
+    boolean existsByDominioEmailAndIdNot(String dominioEmail, Long id);
+
 }

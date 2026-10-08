@@ -4,9 +4,14 @@ import com.exemplo.website.model.Enum.TipoAcesso;
 import com.exemplo.website.model.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
+
+    boolean existsByEmail(String email);
+
+    boolean existsByEmailAndIdNot(String email, Long id);
 
     Optional<Usuario> findByEmailAndTipoAcesso(
             String email,
@@ -18,7 +23,11 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
             TipoAcesso tipoAcesso
     );
 
-    boolean existsByEmail(String email);
+    List<Usuario> findByEndereco_Id(Long enderecoId);
 
-    boolean existsByEmailAndIdNot(String email, Long id);
+    List<Usuario> findByEndereco_IdAndTipoAcesso(
+            Long enderecoId,
+            TipoAcesso tipoAcesso
+    );
+
 }
