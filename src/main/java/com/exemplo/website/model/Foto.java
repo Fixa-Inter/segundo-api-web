@@ -11,18 +11,18 @@ import lombok.NoArgsConstructor;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class FotoPerfil {
+public class Foto {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
 
-    @OneToOne
-    @JoinColumn(name = "usuario_id")
+    @OneToOne(optional = false)
+    @JoinColumn(name = "usuario_id", nullable = false, unique = true)
     private Usuario usuario;
 
-    @Column(name = "url")
+    @Column(name = "url", nullable = false)
     private String url;
 
 }

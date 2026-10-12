@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 public record EventoRequest(
 
+        @NotNull(message = "O usuário é obrigatório")
         Long usuarioId,
 
         @NotNull(message = "O local é obrigatório")

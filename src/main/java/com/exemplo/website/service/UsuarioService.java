@@ -9,80 +9,104 @@ import com.exemplo.website.model.Usuario;
 import com.exemplo.website.repository.EnderecoRepository;
 import com.exemplo.website.repository.UsuarioRepository;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class UsuarioService {
 
-    private final UsuarioRepository usuarioRepository;
     private final EnderecoRepository enderecoRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UsuarioRepository usuarioRepository;
 
-    public UsuarioService(
-            UsuarioRepository usuarioRepository,
-            EnderecoRepository enderecoRepository,
-            PasswordEncoder passwordEncoder
+    public UsuarioResponse cadastrar(
+            UsuarioRequest request
     ) {
-        this.usuarioRepository = usuarioRepository;
-        this.enderecoRepository = enderecoRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
 
-    public UsuarioResponse cadastrar(UsuarioRequest request) {
-
-        validarTipoAcesso(request.tipoAcesso());
-        validarCadastro(request);
+        validarTipoCadastro(request.tipoAcesso());
 
         String email = normalizarEmail(request.email());
 
         if (usuarioRepository.existsByEmail(email)) {
             throw new IllegalArgumentException(
-                    "Já existe um usuário cadastrado com este email"
+                    "Já existe um usuário cadastrado com esse email"
             );
         }
 
-        Endereco endereco = enderecoRepository
-                .findById(request.enderecoId())
-                .orElseThrow(() ->
-                        new EntityNotFoundException(
-                                "Endereço não encontrado"
-                        )
-                );
+        Endereco endereco =
+                enderecoRepository
+                        .findById(request.enderecoId())
+                        .orElseThrow(() ->
+                                new EntityNotFoundException(
+                                        "Endereço não encontrado"
+                                )
+                        );
 
         Usuario usuario = new Usuario();
 
         usuario.setEndereco(endereco);
-        usuario.setNomeCompleto(request.nomeCompleto().trim());
+        usuario.setNomeCompleto(
+                request.nomeCompleto().trim()
+        );
         usuario.setEmail(email);
-        usuario.setTipoAcesso(request.tipoAcesso());
-
+        usuario.setTipoAcesso(
+                request.tipoAcesso()
+        );
+        usuario.setCargo(
+                request.cargo().trim()
+        );
         usuario.setSenhaHash(
                 passwordEncoder.encode(request.senha())
         );
+        usuario.setDataNascimento(
+                request.dataNascimento()
+        );
 
-        usuario.setDataNascimento(request.dataNascimento());
-
-        Usuario usuarioSalvo = usuarioRepository.save(usuario);
-
-        return toResponse(usuarioSalvo);
+        return toResponse(
+                usuarioRepository.save(usuario)
+        );
     }
 
     public List<UsuarioResponse> listarTodos() {
 
-        return usuarioRepository.findAll()
+        return usuarioRepository
+                .findAll()
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    public List<UsuarioResponse> listarPorEndereco(
+            Long enderecoId
+    ) {
+
+        return usuarioRepository
+                .findByEndereco_Id(enderecoId)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    public List<UsuarioResponse> listarTecnicos(
+            Long enderecoId
+    ) {
+
+        return usuarioRepository
+                .findByEndereco_IdAndTipoAcesso(
+                        enderecoId,
+                        TipoAcesso.TECNICO
+                )
                 .stream()
                 .map(this::toResponse)
                 .toList();
     }
 
     public UsuarioResponse buscarPorId(Long id) {
-
-        Usuario usuario = buscarUsuario(id);
-
-        return toResponse(usuario);
+        return toResponse(buscarEntidade(id));
     }
 
     public UsuarioResponse atualizar(
@@ -90,29 +114,23 @@ public class UsuarioService {
             UsuarioUpdateRequest request
     ) {
 
-        Usuario usuario = buscarUsuario(id);
+        Usuario usuario = buscarEntidade(id);
 
         if (request.enderecoId() != null) {
 
-            Endereco endereco = enderecoRepository
-                    .findById(request.enderecoId())
-                    .orElseThrow(() ->
-                            new EntityNotFoundException(
-                                    "Endereço não encontrado"
-                            )
-                    );
+            Endereco endereco =
+                    enderecoRepository
+                            .findById(request.enderecoId())
+                            .orElseThrow(() ->
+                                    new EntityNotFoundException(
+                                            "Endereço não encontrado"
+                                    )
+                            );
 
             usuario.setEndereco(endereco);
         }
 
         if (request.nomeCompleto() != null) {
-
-            if (request.nomeCompleto().isBlank()) {
-                throw new IllegalArgumentException(
-                        "Nome não pode estar vazio"
-                );
-            }
-
             usuario.setNomeCompleto(
                     request.nomeCompleto().trim()
             );
@@ -120,19 +138,18 @@ public class UsuarioService {
 
         if (request.email() != null) {
 
-            if (request.email().isBlank()) {
+            String email =
+                    normalizarEmail(request.email());
+
+            if (
+                    usuarioRepository
+                            .existsByEmailAndIdNot(
+                                    email,
+                                    id
+                            )
+            ) {
                 throw new IllegalArgumentException(
-                        "Email não pode estar vazio"
-                );
-            }
-
-            String email = normalizarEmail(request.email());
-
-            if (usuarioRepository
-                    .existsByEmailAndIdNot(email, id)) {
-
-                throw new IllegalArgumentException(
-                        "Já existe um usuário cadastrado com este email"
+                        "Já existe um usuário cadastrado com esse email"
                 );
             }
 
@@ -141,10 +158,18 @@ public class UsuarioService {
 
         if (request.tipoAcesso() != null) {
 
-            validarTipoAcesso(request.tipoAcesso());
+            validarTipoCadastro(
+                    request.tipoAcesso()
+            );
 
             usuario.setTipoAcesso(
                     request.tipoAcesso()
+            );
+        }
+
+        if (request.cargo() != null) {
+            usuario.setCargo(
+                    request.cargo().trim()
             );
         }
 
@@ -154,39 +179,37 @@ public class UsuarioService {
             );
         }
 
-        Usuario usuarioAtualizado =
-                usuarioRepository.save(usuario);
-
-        return toResponse(usuarioAtualizado);
-    }
-
-    public UsuarioResponse desativar(Long id) {
-
-        Usuario usuario = buscarUsuario(id);
-
-        usuario.setEstaAtivo(false);
-
-        Usuario usuarioAtualizado =
-                usuarioRepository.save(usuario);
-
-        return toResponse(usuarioAtualizado);
+        return toResponse(
+                usuarioRepository.save(usuario)
+        );
     }
 
     public UsuarioResponse ativar(Long id) {
 
-        Usuario usuario = buscarUsuario(id);
+        Usuario usuario = buscarEntidade(id);
 
         usuario.setEstaAtivo(true);
 
-        Usuario usuarioAtualizado =
-                usuarioRepository.save(usuario);
-
-        return toResponse(usuarioAtualizado);
+        return toResponse(
+                usuarioRepository.save(usuario)
+        );
     }
 
-    private Usuario buscarUsuario(Long id) {
+    public UsuarioResponse desativar(Long id) {
 
-        return usuarioRepository.findById(id)
+        Usuario usuario = buscarEntidade(id);
+
+        usuario.setEstaAtivo(false);
+
+        return toResponse(
+                usuarioRepository.save(usuario)
+        );
+    }
+
+    private Usuario buscarEntidade(Long id) {
+
+        return usuarioRepository
+                .findById(id)
                 .orElseThrow(() ->
                         new EntityNotFoundException(
                                 "Usuário não encontrado"
@@ -194,65 +217,22 @@ public class UsuarioService {
                 );
     }
 
-    private void validarTipoAcesso(
+    private void validarTipoCadastro(
             TipoAcesso tipoAcesso
     ) {
 
-        if (tipoAcesso != TipoAcesso.GESTOR
-                && tipoAcesso != TipoAcesso.TECNICO) {
-
+        if (
+                tipoAcesso != TipoAcesso.GESTOR &&
+                        tipoAcesso != TipoAcesso.TECNICO
+        ) {
             throw new IllegalArgumentException(
-                    "Apenas gestores e técnicos podem ser cadastrados por este serviço"
-            );
-        }
-    }
-
-    private void validarCadastro(
-            UsuarioRequest request
-    ) {
-
-        if (request.enderecoId() == null) {
-            throw new IllegalArgumentException(
-                    "Endereço é obrigatório"
-            );
-        }
-
-        if (request.nomeCompleto() == null
-                || request.nomeCompleto().isBlank()) {
-
-            throw new IllegalArgumentException(
-                    "Nome é obrigatório"
-            );
-        }
-
-        if (request.email() == null
-                || request.email().isBlank()) {
-
-            throw new IllegalArgumentException(
-                    "Email é obrigatório"
-            );
-        }
-
-        if (request.senha() == null
-                || request.senha().isBlank()) {
-
-            throw new IllegalArgumentException(
-                    "Senha é obrigatória"
-            );
-        }
-
-        if (request.dataNascimento() == null) {
-            throw new IllegalArgumentException(
-                    "Data de nascimento é obrigatória"
+                    "A API web permite cadastrar apenas GESTOR ou TECNICO"
             );
         }
     }
 
     private String normalizarEmail(String email) {
-
-        return email
-                .trim()
-                .toLowerCase();
+        return email.trim().toLowerCase();
     }
 
     private UsuarioResponse toResponse(
@@ -265,6 +245,7 @@ public class UsuarioService {
                 usuario.getNomeCompleto(),
                 usuario.getEmail(),
                 usuario.getTipoAcesso(),
+                usuario.getCargo(),
                 usuario.getDataNascimento(),
                 usuario.getDataCriacao(),
                 usuario.getEstaAtivo(),
