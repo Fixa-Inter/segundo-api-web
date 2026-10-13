@@ -1,10 +1,11 @@
 package com.exemplo.website.dto.aptidao;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 
 public record AptidaoUpdateRequest(
-        @NotNull(message = "O ID é obrigatório!")
-        Long id,
+        @DecimalMin(value = "0.00", message = "A nota deve ser maior ou igual a zero")
+        @DecimalMax(value = "10.00", message = "A nota deve ser menor ou igual a dez")
         Double nota,
         Boolean estaAtivo
 ){

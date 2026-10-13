@@ -4,7 +4,6 @@ import com.exemplo.website.model.Enum.CategoriaProblema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.DecimalMax;
-import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,7 +35,7 @@ public class Aptidao {
     @DecimalMin("0.00")
     @DecimalMax("10.00")
     @Column(name = "nota", nullable = false)
-    private BigDecimal nota;
+    private Double nota;
 
     @Column(name = "data_criacao", nullable = false)
     private LocalDateTime dataCriacao;

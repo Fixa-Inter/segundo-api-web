@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Entity
 @Getter
@@ -28,10 +29,10 @@ public class Turno {
     private String nome;
 
     @Column(name = "hora_inicio", nullable = false)
-    private LocalDateTime horaInicio;
+    private LocalTime horaInicio;
 
     @Column(name = "hora_fim", nullable = false)
-    private LocalDateTime horaFim;
+    private LocalTime horaFim;
 
     @Column(name = "atravessa_meia_noite", nullable = false)
     private Boolean atravessaMeiaNoite = false;

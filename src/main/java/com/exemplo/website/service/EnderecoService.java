@@ -8,33 +8,23 @@ import com.exemplo.website.model.Instituicao;
 import com.exemplo.website.repository.EnderecoRepository;
 import com.exemplo.website.repository.InstituicaoRepository;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class EnderecoService {
 
     private final EnderecoRepository enderecoRepository;
     private final InstituicaoRepository instituicaoRepository;
 
-    public EnderecoService(
-            EnderecoRepository enderecoRepository,
-            InstituicaoRepository instituicaoRepository
-    ) {
-        this.enderecoRepository = enderecoRepository;
-        this.instituicaoRepository = instituicaoRepository;
-    }
-
     public EnderecoResponse cadastrar(EnderecoRequest request) {
 
-        validarCadastro(request);
+        validarCnpjNovo(request.cnpj());
 
-        Instituicao instituicao = instituicaoRepository
-                .findById(request.instituicaoId())
-                .orElseThrow(() ->
-                        new EntityNotFoundException("Instituição não encontrada")
-                );
+        Instituicao instituicao = buscarInstituicao(request.instituicaoId());
 
         Endereco endereco = new Endereco();
 
@@ -45,24 +35,27 @@ public class EnderecoService {
         endereco.setBairro(request.bairro().trim());
         endereco.setCidade(request.cidade().trim());
         endereco.setEstado(request.estado().trim().toUpperCase());
-        endereco.setPais(request.pais());
-        endereco.setCep(normalizarCep(request.cep()));
-        endereco.setCnpj(normalizarCnpj(request.cnpj()));
+        endereco.setPais(
+                request.pais() == null
+                        ? null
+                        : request.pais().trim()
+        );
+        endereco.setCep(validarCep(request.cep()));
+        endereco.setCnpj(normalizarNumero(request.cnpj()));
 
-        Endereco enderecoSalvo = enderecoRepository.save(endereco);
-
-        return toResponse(enderecoSalvo);
+        return toResponse(enderecoRepository.save(endereco));
     }
 
     public List<EnderecoResponse> listarTodos() {
-        return enderecoRepository.findAll()
+        return enderecoRepository
+                .findAll()
                 .stream()
                 .map(this::toResponse)
                 .toList();
     }
 
     public EnderecoResponse buscarPorId(Long id) {
-        return toResponse(buscarEndereco(id));
+        return toResponse(buscarEntidade(id));
     }
 
     public EnderecoResponse atualizar(
@@ -70,16 +63,12 @@ public class EnderecoService {
             EnderecoUpdateRequest request
     ) {
 
-        Endereco endereco = buscarEndereco(id);
+        Endereco endereco = buscarEntidade(id);
 
         if (request.instituicaoId() != null) {
-            Instituicao instituicao = instituicaoRepository
-                    .findById(request.instituicaoId())
-                    .orElseThrow(() ->
-                            new EntityNotFoundException("Instituição não encontrada")
-                    );
-
-            endereco.setInstituicao(instituicao);
+            endereco.setInstituicao(
+                    buscarInstituicao(request.instituicaoId())
+            );
         }
 
         if (request.logradouro() != null) {
@@ -103,9 +92,10 @@ public class EnderecoService {
         }
 
         if (request.estado() != null) {
-            if (request.estado().length() != 2) {
+
+            if (request.estado().trim().length() != 2) {
                 throw new IllegalArgumentException(
-                        "Estado deve possuir 2 caracteres"
+                        "O estado deve possuir 2 caracteres"
                 );
             }
 
@@ -115,51 +105,57 @@ public class EnderecoService {
         }
 
         if (request.pais() != null) {
-            endereco.setPais(request.pais());
+            endereco.setPais(request.pais().trim());
         }
 
         if (request.cep() != null) {
-            endereco.setCep(
-                    normalizarCep(request.cep())
-            );
+
+            endereco.setCep(validarCep(request.cep()));
         }
 
         if (request.cnpj() != null) {
-            endereco.setCnpj(
-                    normalizarCnpj(request.cnpj())
-            );
+
+            String cnpj = normalizarNumero(request.cnpj());
+
+            if (cnpj.length() != 14) {
+                throw new IllegalArgumentException(
+                        "O CNPJ deve possuir 14 dígitos"
+                );
+            }
+
+            if (enderecoRepository.existsByCnpjAndIdNot(cnpj, id)) {
+                throw new IllegalArgumentException(
+                        "Já existe um endereço cadastrado com esse CNPJ"
+                );
+            }
+
+            endereco.setCnpj(cnpj);
         }
 
-        Endereco enderecoAtualizado =
-                enderecoRepository.save(endereco);
-
-        return toResponse(enderecoAtualizado);
+        return toResponse(enderecoRepository.save(endereco));
     }
 
     public EnderecoResponse ativar(Long id) {
 
-        Endereco endereco = buscarEndereco(id);
+        Endereco endereco = buscarEntidade(id);
 
         endereco.setEstaAtivo(true);
 
-        return toResponse(
-                enderecoRepository.save(endereco)
-        );
+        return toResponse(enderecoRepository.save(endereco));
     }
 
     public EnderecoResponse desativar(Long id) {
 
-        Endereco endereco = buscarEndereco(id);
+        Endereco endereco = buscarEntidade(id);
 
         endereco.setEstaAtivo(false);
 
-        return toResponse(
-                enderecoRepository.save(endereco)
-        );
+        return toResponse(enderecoRepository.save(endereco));
     }
 
-    private Endereco buscarEndereco(Long id) {
-        return enderecoRepository.findById(id)
+    private Endereco buscarEntidade(Long id) {
+        return enderecoRepository
+                .findById(id)
                 .orElseThrow(() ->
                         new EntityNotFoundException(
                                 "Endereço não encontrado"
@@ -167,75 +163,50 @@ public class EnderecoService {
                 );
     }
 
-    private void validarCadastro(EnderecoRequest request) {
+    private Instituicao buscarInstituicao(Long id) {
+        return instituicaoRepository
+                .findById(id)
+                .orElseThrow(() ->
+                        new EntityNotFoundException(
+                                "Instituição não encontrada"
+                        )
+                );
+    }
 
-        if (request.instituicaoId() == null) {
+    private void validarCnpjNovo(String valor) {
+
+        String cnpj = normalizarNumero(valor);
+
+        if (cnpj.length() != 14) {
             throw new IllegalArgumentException(
-                    "Instituição é obrigatória"
+                    "O CNPJ deve possuir 14 dígitos"
             );
         }
 
-        if (request.logradouro() == null ||
-                request.logradouro().isBlank()) {
+        if (enderecoRepository.existsByCnpj(cnpj)) {
             throw new IllegalArgumentException(
-                    "Logradouro é obrigatório"
-            );
-        }
-
-        if (request.numero() == null ||
-                request.numero().isBlank()) {
-            throw new IllegalArgumentException(
-                    "Número é obrigatório"
-            );
-        }
-
-        if (request.bairro() == null ||
-                request.bairro().isBlank()) {
-            throw new IllegalArgumentException(
-                    "Bairro é obrigatório"
-            );
-        }
-
-        if (request.cidade() == null ||
-                request.cidade().isBlank()) {
-            throw new IllegalArgumentException(
-                    "Cidade é obrigatória"
-            );
-        }
-
-        if (request.estado() == null ||
-                request.estado().length() != 2) {
-            throw new IllegalArgumentException(
-                    "Estado deve possuir 2 caracteres"
-            );
-        }
-
-        if (request.cep() == null ||
-                normalizarCep(request.cep()).length() != 8) {
-            throw new IllegalArgumentException(
-                    "CEP deve possuir 8 dígitos"
-            );
-        }
-
-        if (request.cnpj() == null ||
-                normalizarCnpj(request.cnpj()).length() != 14) {
-            throw new IllegalArgumentException(
-                    "CNPJ deve possuir 14 dígitos"
+                    "Já existe um endereço cadastrado com esse CNPJ"
             );
         }
     }
 
-    private String normalizarCep(String cep) {
-        return cep.replaceAll("\\D", "");
+    private String validarCep(String valor) {
+        String cep = normalizarNumero(valor);
+
+        if (cep.length() != 8) {
+            throw new IllegalArgumentException(
+                    "O CEP deve possuir 8 dígitos"
+            );
+        }
+
+        return cep;
     }
 
-    private String normalizarCnpj(String cnpj) {
-        return cnpj.replaceAll("\\D", "");
+    private String normalizarNumero(String valor) {
+        return valor.replaceAll("\\D", "");
     }
 
-    private EnderecoResponse toResponse(
-            Endereco endereco
-    ) {
+    private EnderecoResponse toResponse(Endereco endereco) {
 
         return new EnderecoResponse(
                 endereco.getId(),
