@@ -35,6 +35,8 @@ public class Usuario {
     @Column(name = "tipo_acesso", nullable = false)
     private TipoAcesso tipoAcesso;
 
+    @Column(name = "cargo", nullable = false, length = 100)
+    private String cargo;
 
     @Column(name = "senha_hash", nullable = false)
     private String senhaHash;

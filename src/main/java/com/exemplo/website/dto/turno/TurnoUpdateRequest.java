@@ -1,10 +1,12 @@
 package com.exemplo.website.dto.turno;
 
+import java.time.LocalTime;
+
 public record TurnoUpdateRequest(
         Long enderecoId,
         String nome,
-        Integer horaInicio,
-        Integer horaFim,
+        LocalTime horaInicio,
+        LocalTime horaFim,
         Boolean atravessaMeiaNoite
 ) {
 }
