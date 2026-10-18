@@ -49,6 +49,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/auth/login").permitAll()
+                        .requestMatchers("/actuator/health").permitAll() 
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable())
