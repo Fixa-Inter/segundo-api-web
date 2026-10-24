@@ -1,6 +1,6 @@
 package com.exemplo.website.security;
 
-import com.exemplo.website.model.Endereco;
+import com.exemplo.website.model.Unidade;
 import com.exemplo.website.model.Enum.TipoAcesso;
 import com.exemplo.website.model.Usuario;
 import com.exemplo.website.repository.UsuarioRepository;
@@ -76,18 +76,18 @@ class UsuarioDetailsServiceTest {
     @Test
     void deveCarregarAdministradorPeloCnpj() {
 
-        Endereco endereco = new Endereco();
-        endereco.setCnpj("12345678000190");
+        Unidade unidade = new Unidade();
+        unidade.setCnpj("12345678000190");
 
         Usuario administrador = new Usuario();
 
-        administrador.setEndereco(endereco);
+        administrador.setUnidade(unidade);
         administrador.setSenhaHash("$2y$12$hash");
         administrador.setTipoAcesso(TipoAcesso.ADMINISTRADOR);
         administrador.setEstaAtivo(true);
 
         when(
-                usuarioRepository.findByEndereco_CnpjAndTipoAcesso(
+                usuarioRepository.findByUnidade_CnpjAndTipoAcesso(
                         "12345678000190",
                         TipoAcesso.ADMINISTRADOR
                 )
@@ -104,7 +104,7 @@ class UsuarioDetailsServiceTest {
         );
 
         verify(usuarioRepository)
-                .findByEndereco_CnpjAndTipoAcesso(
+                .findByUnidade_CnpjAndTipoAcesso(
                         "12345678000190",
                         TipoAcesso.ADMINISTRADOR
                 );

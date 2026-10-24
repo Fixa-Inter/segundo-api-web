@@ -9,6 +9,8 @@ import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.List;
 
 @Service
@@ -16,6 +18,7 @@ public class JwtService {
 
     private final JwtEncoder jwtEncoder;
     private final long expirationSeconds;
+    private final SecureRandom secureRandom = new SecureRandom();
 
     public JwtService(
             JwtEncoder jwtEncoder,
@@ -64,5 +67,11 @@ public class JwtService {
                         )
                 )
                 .getTokenValue();
+    }
+
+    public String gerarRefreshToken() {
+        byte[] bytes = new byte[32];
+        secureRandom.nextBytes(bytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
 }

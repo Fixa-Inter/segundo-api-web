@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Código de recuperação</title>
+    <style>
+        body { margin: 0; padding: 0; background: #f5f6f9; font-family: Arial, Helvetica, sans-serif; color: #202020; }
+        .page { width: 100%; background: #f5f6f9; }
+        .outer { padding: 22px 12px 36px; }
+        .container { width: 100%; max-width: 600px; }
+        .header { padding: 12px 0 30px; text-align: center; }
+        .logo { display: block; width: 220px; max-width: 100%; height: auto; margin: 0 auto; }
+        .accent { height: 4px; background: #1268f3; font-size: 0; line-height: 0; }
+        .content { padding: 34px 34px 38px; background: #ffffff; text-align: center; }
+        .mascot { display: block; width: 190px; height: 190px; object-fit: contain; margin: 0 auto 18px; }
+        .title { margin: 0; color: #292929; font-size: 27px; line-height: 1.25; }
+        .description { max-width: 430px; margin: 12px auto 0; color: #777985; font-size: 16px; line-height: 1.6; }
+        .code-wrapper { margin: 28px auto 12px; }
+        .code-box { padding: 17px 30px; border-radius: 4px; background: #1268f3; }
+        .code { color: #ffffff; font-size: 31px; line-height: 1; font-weight: bold; letter-spacing: 9px; }
+        .notice { max-width: 430px; margin: 25px auto 0; color: #777985; font-size: 14px; line-height: 1.6; }
+        .warning { max-width: 430px; margin: 10px auto 0; color: #777985; font-size: 14px; line-height: 1.6; }
+        .footer { padding: 28px 24px 0; color: #a1a3ad; text-align: center; }
+        .dots { color: #d5d6dc; font-size: 22px; letter-spacing: 8px; }
+        .footer p { margin: 14px 0 0; font-size: 11px; line-height: 1.6; }
+        @media only screen and (max-width: 480px) {
+            .content { padding: 28px 20px 32px; }
+            .mascot { width: 160px; height: 160px; }
+            .title { font-size: 24px; }
+            .code { font-size: 26px; letter-spacing: 6px; }
+        }
+    </style>
+</head>
+<body>
+<table class="page" role="presentation" cellspacing="0" cellpadding="0" border="0">
+    <tr><td class="outer" align="center">
+        <table class="container" role="presentation" cellspacing="0" cellpadding="0" border="0">
+            <tr><td class="header" align="center">
+                <img class="logo" src="https://res.cloudinary.com/nq0cjn3e/image/upload/v1790774504/fixa-logo.png" alt="Fixa">
+            </td></tr>
+            <tr><td class="accent">&nbsp;</td></tr>
+            <tr><td class="content">
+                <img class="mascot" src="https://res.cloudinary.com/nq0cjn3e/image/upload/v1790774505/manus-email.png" alt="Boneca Manus">
+                <h1 class="title">Olá, <span th:text="${nome}">usuário</span>!</h1>
+                <p class="description">Use o código abaixo para confirmar sua identidade e redefinir sua senha.</p>
+                <table class="code-wrapper" role="presentation" cellspacing="0" cellpadding="0" border="0" align="center">
+                    <tr><td class="code-box" align="center"><span class="code" th:text="${codigo}">123456</span></td></tr>
+                </table>
+                <p class="notice">Esse código expira em <strong th:text="${validade}">3 minutos</strong> e só pode ser usado uma vez.</p>
+                <p class="warning">Se você não solicitou essa alteração, ignore este e-mail.</p>
+            </td></tr>
+            <tr><td class="footer">
+                <div class="dots">● ● ● ● ●</div>
+                <p>Política de privacidade &nbsp;|&nbsp; Ajuda</p>
+                <p>Este é um e-mail automático. Por favor, não responda.</p>
+                <p>© Manus. Todos os direitos reservados.</p>
+            </td></tr>
+        </table>
+    </td></tr>
+</table>
+</body>
+</html>

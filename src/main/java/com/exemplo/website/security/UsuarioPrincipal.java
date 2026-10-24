@@ -34,7 +34,7 @@ public class UsuarioPrincipal implements UserDetails {
     @Override
     public String getUsername() {
         if (usuario.getTipoAcesso() == TipoAcesso.ADMINISTRADOR) {
-            return usuario.getEndereco().getCnpj();
+            return usuario.getUnidade().getCnpj();
         }
 
         return usuario.getEmail();

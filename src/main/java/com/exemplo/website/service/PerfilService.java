@@ -9,9 +9,12 @@ import com.exemplo.website.repository.FotoRepository;
 import com.exemplo.website.repository.UsuarioRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class PerfilService {
 
@@ -19,18 +22,22 @@ public class PerfilService {
     private final FotoRepository fotoRepository;
 
     public PerfilResponse buscarPorUsuarioId(Long usuarioId) {
-        return toResponse(buscarUsuario(usuarioId));
+        Usuario usuario = buscarUsuario(usuarioId);
+        validarAtivo(usuario);
+        return toResponse(usuario);
     }
 
     public PerfilResponse atualizar(Long usuarioId, PerfilUpdateRequest request) {
         Usuario usuario = buscarUsuario(usuarioId);
+        validarAtivo(usuario);
 
         if (request.nomeCompleto() != null) {
             usuario.setNomeCompleto(request.nomeCompleto().trim());
         }
 
         if (request.email() != null) {
-            String email = request.email().trim().toLowerCase();
+            String email = EmailInstitucionalValidator.normalizar(request.email());
+            EmailInstitucionalValidator.validar(email, usuario.getUnidade());
 
             if (usuarioRepository.existsByEmailAndIdNot(email, usuarioId)) {
                 throw new IllegalArgumentException(
@@ -54,9 +61,15 @@ public class PerfilService {
                 .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
     }
 
+    private void validarAtivo(Usuario usuario) {
+        if (!Boolean.TRUE.equals(usuario.getEstaAtivo())) {
+            throw new AccessDeniedException("Usuário inativo");
+        }
+    }
+
     private PerfilResponse toResponse(Usuario usuario) {
         FotoResponse fotoResponse = fotoRepository
-                .findByUsuario_Id(usuario.getId())
+                .findFirstByUsuario_IdOrderByIdDesc(usuario.getId())
                 .map(this::toFotoResponse)
                 .orElse(null);
 

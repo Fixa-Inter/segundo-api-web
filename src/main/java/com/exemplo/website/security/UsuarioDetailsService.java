@@ -52,7 +52,7 @@ public class UsuarioDetailsService implements UserDetailsService {
         String cnpjNormalizado = normalizarCnpj(cnpj);
 
         return usuarioRepository
-                .findByEndereco_CnpjAndTipoAcesso(
+                .findByUnidade_CnpjAndTipoAcesso(
                         cnpjNormalizado,
                         TipoAcesso.ADMINISTRADOR
                 )
