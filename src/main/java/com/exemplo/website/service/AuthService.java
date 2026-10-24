@@ -2,19 +2,22 @@ package com.exemplo.website.service;
 
 import com.exemplo.website.dto.auth.LoginRequest;
 import com.exemplo.website.dto.auth.LoginResponse;
-import com.exemplo.website.model.Endereco;
+import com.exemplo.website.dto.auth.AlterarSenhaRequest;
+import com.exemplo.website.model.Unidade;
 import com.exemplo.website.model.Enum.TipoAcesso;
-import com.exemplo.website.model.Instituicao;
 import com.exemplo.website.model.Usuario;
 import com.exemplo.website.repository.UsuarioRepository;
+import com.exemplo.website.repository.RefreshTokenRepository;
 import com.exemplo.website.security.JwtService;
 import com.exemplo.website.security.UsuarioPrincipal;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Locale;
 import java.util.Set;
+import java.time.Duration;
+import org.springframework.beans.factory.annotation.Value;
 
 @Service
 public class AuthService {
@@ -27,19 +30,25 @@ public class AuthService {
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final Duration refreshTokenValidity;
 
     public AuthService(
             UsuarioRepository usuarioRepository,
             PasswordEncoder passwordEncoder,
-            JwtService jwtService
+            JwtService jwtService,
+            RefreshTokenRepository refreshTokenRepository,
+            @Value("${security.jwt.refresh-expiration-seconds:2592000}") long refreshTokenExpirationSeconds
     ) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.refreshTokenRepository = refreshTokenRepository;
+        this.refreshTokenValidity = Duration.ofSeconds(refreshTokenExpirationSeconds);
     }
 
     public LoginResponse login(LoginRequest request) {
-        String email = request.email().trim();
+        String email = EmailInstitucionalValidator.normalizar(request.email());
 
         Usuario usuario = usuarioRepository
                 .findByEmail(email)
@@ -47,17 +56,66 @@ public class AuthService {
 
         validarTipoAcesso(usuario);
         validarSenha(request.senha(), usuario.getSenhaHash());
-        validarCnpj(request.cnpj(), usuario.getEndereco());
-        validarDominio(email, usuario.getEndereco());
+        validarCnpj(request.cnpj(), usuario.getUnidade());
+        try {
+            EmailInstitucionalValidator.validar(email, usuario.getUnidade());
+        } catch (IllegalArgumentException exception) {
+            throw credenciaisInvalidas();
+        }
         validarUsuarioAtivo(usuario);
 
-        String token = jwtService.gerarToken(new UsuarioPrincipal(usuario));
+        return emitirTokens(usuario);
+    }
+
+    public LoginResponse renovar(String refreshToken) {
+        Long usuarioId = refreshTokenRepository.consumir(refreshToken)
+                .orElseThrow(AuthService::credenciaisInvalidas);
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(AuthService::credenciaisInvalidas);
+
+        if (!TIPOS_PERMITIDOS.contains(usuario.getTipoAcesso())
+                || !Boolean.TRUE.equals(usuario.getEstaAtivo())) {
+            throw credenciaisInvalidas();
+        }
+
+        return emitirTokens(usuario);
+    }
+
+    public void logout(String refreshToken) {
+        refreshTokenRepository.remover(refreshToken);
+    }
+
+    @Transactional
+    public void alterarSenha(Long usuarioId, AlterarSenhaRequest request) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(AuthService::credenciaisInvalidas);
+        validarUsuarioAtivo(usuario);
+        if (usuario.getSenhaHash() == null
+                || !passwordEncoder.matches(request.senhaAtual(), usuario.getSenhaHash())) {
+            throw credenciaisInvalidas();
+        }
+        if (!request.novaSenha().equals(request.confirmarNovaSenha())) {
+            throw new IllegalArgumentException("A confirmação da nova senha não confere");
+        }
+
+        usuario.setSenhaHash(passwordEncoder.encode(request.novaSenha()));
+        usuario.setPrimeiroAcesso(false);
+        usuarioRepository.save(usuario);
+        refreshTokenRepository.removerTodosPorUsuarioId(usuarioId);
+    }
+
+    private LoginResponse emitirTokens(Usuario usuario) {
+        UsuarioPrincipal principal = new UsuarioPrincipal(usuario);
+        String accessToken = jwtService.gerarToken(principal);
+        String refreshToken = jwtService.gerarRefreshToken();
+        refreshTokenRepository.salvar(refreshToken, usuario.getId(), refreshTokenValidity);
 
         return new LoginResponse(
                 usuario.getId(),
                 usuario.getNomeCompleto(),
                 usuario.getTipoAcesso().name(),
-                token
+                accessToken,
+                refreshToken
         );
     }
 
@@ -73,33 +131,13 @@ public class AuthService {
         }
     }
 
-    private void validarCnpj(String cnpjInformado, Endereco endereco) {
-        String cnpjUsuario = endereco == null
+    private void validarCnpj(String cnpjInformado, Unidade unidade) {
+        String cnpjUsuario = unidade == null
                 ? null
-                : normalizarCnpj(endereco.getCnpj());
+                : normalizarCnpj(unidade.getCnpj());
 
         if (cnpjUsuario == null
                 || !cnpjUsuario.equals(normalizarCnpj(cnpjInformado))) {
-            throw credenciaisInvalidas();
-        }
-    }
-
-    private void validarDominio(String email, Endereco endereco) {
-        Instituicao instituicao = endereco == null
-                ? null
-                : endereco.getInstituicao();
-
-        String dominioInstituicao = instituicao == null
-                ? null
-                : normalizarDominio(instituicao.getDominioEmail());
-
-        int separador = email.lastIndexOf('@');
-        String dominioEmail = separador > 0 && separador < email.length() - 1
-                ? email.substring(separador + 1).toLowerCase(Locale.ROOT)
-                : null;
-
-        if (dominioInstituicao == null
-                || !dominioInstituicao.equals(dominioEmail)) {
             throw credenciaisInvalidas();
         }
     }
@@ -117,17 +155,6 @@ public class AuthService {
 
         String normalizado = cnpj.replaceAll("\\D", "");
         return normalizado.isBlank() ? null : normalizado;
-    }
-
-    private String normalizarDominio(String dominio) {
-        if (dominio == null) {
-            return null;
-        }
-
-        String normalizado = dominio.trim().toLowerCase(Locale.ROOT);
-        return normalizado.startsWith("@")
-                ? normalizado.substring(1)
-                : normalizado;
     }
 
     private static BadCredentialsException credenciaisInvalidas() {
