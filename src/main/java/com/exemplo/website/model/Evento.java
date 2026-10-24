@@ -24,10 +24,10 @@ public class Evento {
     private Usuario usuario;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "local_endereco_id", nullable = false)
+    @JoinColumn(name = "local_unidade_id", nullable = false)
     public LocalEndereco localEndereco;
 
-    @Column(name = "titulo", nullable = false)
+    @Column(name = "titulo", nullable = false, length = 100)
     private String titulo;
 
     @Column(name = "descricao", nullable = false)

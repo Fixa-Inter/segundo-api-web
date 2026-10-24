@@ -20,15 +20,15 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
             TipoAcesso tipoAcesso
     );
 
-    Optional<Usuario> findByEndereco_CnpjAndTipoAcesso(
+    Optional<Usuario> findByUnidade_CnpjAndTipoAcesso(
             String cnpj,
             TipoAcesso tipoAcesso
     );
 
-    List<Usuario> findByEndereco_Id(Long enderecoId);
+    List<Usuario> findByUnidade_Id(Long unidadeId);
 
-    List<Usuario> findByEndereco_IdAndTipoAcesso(
-            Long enderecoId,
+    List<Usuario> findByUnidade_IdAndTipoAcesso(
+            Long unidadeId,
             TipoAcesso tipoAcesso
     );
 

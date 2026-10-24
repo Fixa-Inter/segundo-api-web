@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface LocalEnderecoRepository extends JpaRepository<LocalEndereco, Long> {
 
-    List<LocalEndereco> findByEndereco_Id(Long enderecoId);
+    List<LocalEndereco> findByUnidade_Id(Long unidadeId);
 
 }

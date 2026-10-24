@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface TurnoRepository extends JpaRepository<Turno, Long> {
 
-    List<Turno> findByEndereco_Id(Long enderecoId);
+    List<Turno> findByUnidade_Id(Long unidadeId);
 
 }

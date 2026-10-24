@@ -9,22 +9,26 @@ import com.exemplo.website.model.Usuario;
 import com.exemplo.website.repository.EventoRepository;
 import com.exemplo.website.repository.LocalEnderecoRepository;
 import com.exemplo.website.repository.UsuarioRepository;
+import com.exemplo.website.security.AccessPolicyService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class EventoService {
 
     private final EventoRepository eventoRepository;
     private final LocalEnderecoRepository localEnderecoRepository;
     private final UsuarioRepository usuarioRepository;
+    private final AccessPolicyService accessPolicyService;
 
-    public EventoResponse cadastrar(EventoRequest request) {
+    public EventoResponse cadastrar(EventoRequest request, Long usuarioAutenticadoId) {
 
         validarDatas(
                 request.dataHoraInicio(),
@@ -48,6 +52,12 @@ public class EventoService {
                                 )
                         );
 
+        accessPolicyService.exigirAcessoUnidade(usuarioAutenticadoId, usuario.getUnidade().getId());
+        accessPolicyService.exigirAcessoUnidade(usuarioAutenticadoId, localEndereco.getUnidade().getId());
+        if (!usuario.getUnidade().getId().equals(localEndereco.getUnidade().getId())) {
+            throw new IllegalArgumentException("O usuário e o local devem pertencer à mesma unidade");
+        }
+
         Evento evento = new Evento();
 
         evento.setUsuario(usuario);
@@ -68,17 +78,24 @@ public class EventoService {
         return toResponse(eventoRepository.save(evento));
     }
 
-    public List<EventoResponse> listarTodos() {
-        return eventoRepository
-                .findAll()
+    public List<EventoResponse> listarTodos(Long usuarioAutenticadoId) {
+        List<Evento> eventos = accessPolicyService.ehAdministrador(usuarioAutenticadoId)
+                ? eventoRepository.findAll()
+                : eventoRepository.findByLocalEndereco_Unidade_Id(accessPolicyService.unidadeDoUsuarioAutenticado(usuarioAutenticadoId));
+        return eventos
                 .stream()
                 .map(this::toResponse)
                 .toList();
     }
 
     public List<EventoResponse> listarPorUsuario(
-            Long usuarioId
+            Long usuarioId,
+            Long usuarioAutenticadoId
     ) {
+
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+        accessPolicyService.exigirAcessoUnidade(usuarioAutenticadoId, usuario.getUnidade().getId());
 
         return eventoRepository
                 .findByUsuario_Id(usuarioId)
@@ -87,16 +104,20 @@ public class EventoService {
                 .toList();
     }
 
-    public EventoResponse buscarPorId(Long id) {
-        return toResponse(buscarEntidade(id));
+    public EventoResponse buscarPorId(Long id, Long usuarioAutenticadoId) {
+        Evento evento = buscarEntidade(id);
+        validarAcesso(usuarioAutenticadoId, evento);
+        return toResponse(evento);
     }
 
     public EventoResponse atualizar(
             Long id,
-            EventoUpdateRequest request
+            EventoUpdateRequest request,
+            Long usuarioAutenticadoId
     ) {
 
         Evento evento = buscarEntidade(id);
+        validarAcesso(usuarioAutenticadoId, evento);
 
         if (request.localEnderecoId() != null) {
 
@@ -110,6 +131,10 @@ public class EventoService {
                             );
 
             evento.setLocalEndereco(localEndereco);
+            accessPolicyService.exigirAcessoUnidade(usuarioAutenticadoId, localEndereco.getUnidade().getId());
+            if (!evento.getUsuario().getUnidade().getId().equals(localEndereco.getUnidade().getId())) {
+                throw new IllegalArgumentException("O usuário e o local devem pertencer à mesma unidade");
+            }
         }
 
         if (request.titulo() != null) {
@@ -152,9 +177,10 @@ public class EventoService {
         return toResponse(eventoRepository.save(evento));
     }
 
-    public void deletar(Long id) {
+    public void deletar(Long id, Long usuarioAutenticadoId) {
 
         Evento evento = buscarEntidade(id);
+        validarAcesso(usuarioAutenticadoId, evento);
 
         eventoRepository.delete(evento);
     }
@@ -186,6 +212,11 @@ public class EventoService {
                     "A data de fim deve ser posterior à data de início"
             );
         }
+    }
+
+    private void validarAcesso(Long usuarioAutenticadoId, Evento evento) {
+        accessPolicyService.exigirAcessoUnidade(usuarioAutenticadoId, evento.getUsuario().getUnidade().getId());
+        accessPolicyService.exigirAcessoUnidade(usuarioAutenticadoId, evento.getLocalEndereco().getUnidade().getId());
     }
 
     private EventoResponse toResponse(Evento evento) {

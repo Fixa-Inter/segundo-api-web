@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 
 public record LocalEnderecoResponse(
         Long id,
-        Long enderecoId,
+        Long unidadeId,
         String nome,
         TipoLocalEndereco tipoLocalEndereco,
         String descricao,

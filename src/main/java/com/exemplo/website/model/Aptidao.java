@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -34,8 +35,8 @@ public class Aptidao {
 
     @DecimalMin("0.00")
     @DecimalMax("10.00")
-    @Column(name = "nota", nullable = false)
-    private Double nota;
+    @Column(name = "nota", nullable = false, precision = 4, scale = 2)
+    private BigDecimal nota;
 
     @Column(name = "data_criacao", nullable = false)
     private LocalDateTime dataCriacao;

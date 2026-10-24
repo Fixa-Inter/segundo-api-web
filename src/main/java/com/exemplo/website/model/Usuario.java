@@ -1,6 +1,7 @@
 package com.exemplo.website.model;
 
 import com.exemplo.website.model.Enum.TipoAcesso;
+import com.exemplo.website.model.Enum.TipoAcessoConverter;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,15 +24,16 @@ public class Usuario {
 
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "endereco_id", nullable = false)
-    private Endereco endereco;
+    @JoinColumn(name = "unidade_id", nullable = false)
+    private Unidade unidade;
 
-    @Column(name = "nome_completo", nullable = false)
+    @Column(name = "nome_completo", nullable = false, length = 100)
     private String nomeCompleto;
 
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(name = "email", nullable = false, unique = true, length = 100)
     private String email;
 
+    @Convert(converter = TipoAcessoConverter.class)
     @Column(name = "tipo_acesso", nullable = false)
     private TipoAcesso tipoAcesso;
 

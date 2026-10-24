@@ -7,5 +7,5 @@ import java.util.Optional;
 
 public interface FotoRepository extends JpaRepository<Foto, Long> {
 
-    Optional<Foto> findByUsuario_Id(Long usuarioId);
+    Optional<Foto> findFirstByUsuario_IdOrderByIdDesc(Long usuarioId);
 }
