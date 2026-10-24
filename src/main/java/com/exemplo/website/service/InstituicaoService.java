@@ -8,10 +8,13 @@ import com.exemplo.website.repository.InstituicaoRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Locale;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class InstituicaoService {
 
@@ -143,7 +146,7 @@ public class InstituicaoService {
     private String normalizarDominio(String dominio) {
 
         String resultado =
-                dominio.trim().toLowerCase();
+                dominio.trim().toLowerCase(Locale.ROOT);
 
         if (resultado.startsWith("@")) {
             resultado = resultado.substring(1);

@@ -10,6 +10,7 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "local_unidade")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -22,13 +23,13 @@ public class LocalEndereco {
     private Long id;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "endereco_id", nullable = false)
-    private Endereco endereco;
+    @JoinColumn(name = "unidade_id", nullable = false)
+    private Unidade unidade;
 
-    @Column(name = "nome", nullable = false)
+    @Column(name = "nome", nullable = false, length = 100)
     private String nome;
 
-    @Column(name = "tipo_local_endereco", nullable = false)
+    @Column(name = "tipo_local_unidade", nullable = false)
     private TipoLocalEndereco tipoLocalEndereco;
 
     @Column(name = "descricao", nullable = false)

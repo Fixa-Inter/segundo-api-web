@@ -5,15 +5,15 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "unidade")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Endereco {
+public class Unidade {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -23,26 +23,26 @@ public class Endereco {
     @JoinColumn(name = "instituicao_id", nullable = false)
     private Instituicao instituicao;
 
-    @Column(name = "logradouro", nullable = false)
+    @Column(name = "nome", nullable = false, length = 100)
+    private String nome;
+
+    @Column(name = "logradouro", nullable = false, length = 100)
     private String logradouro;
 
-    @Column(name = "numero", nullable = false)
+    @Column(name = "numero", nullable = false, length = 10)
     private String numero;
 
-    @Column(name = "complemento")
+    @Column(name = "complemento", length = 100)
     private String complemento;
 
-    @Column(name = "bairro", nullable = false)
+    @Column(name = "bairro", nullable = false, length = 100)
     private String bairro;
 
-    @Column(name = "cidade", nullable = false)
+    @Column(name = "cidade", nullable = false, length = 100)
     private String cidade;
 
     @Column(name = "estado", nullable = false, length = 2)
     private String estado;
-
-    @Column(name = "pais")
-    private String pais;
 
     @Column(name = "cep", nullable = false, length = 8)
     private String cep;

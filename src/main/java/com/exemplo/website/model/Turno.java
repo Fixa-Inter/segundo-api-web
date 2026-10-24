@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 @Entity
 @Getter
@@ -22,17 +21,17 @@ public class Turno {
     private Long id;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "endereco_id", nullable = false)
-    private Endereco endereco;
+    @JoinColumn(name = "unidade_id", nullable = false)
+    private Unidade unidade;
 
-    @Column(name = "nome", nullable = false)
+    @Column(name = "nome", nullable = false, length = 100)
     private String nome;
 
     @Column(name = "hora_inicio", nullable = false)
-    private LocalTime horaInicio;
+    private Integer horaInicio;
 
     @Column(name = "hora_fim", nullable = false)
-    private LocalTime horaFim;
+    private Integer horaFim;
 
     @Column(name = "atravessa_meia_noite", nullable = false)
     private Boolean atravessaMeiaNoite = false;

@@ -1,14 +1,13 @@
 package com.exemplo.website.dto.turno;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 public record TurnoResponse(
         Long id,
-        Long enderecoId,
+        Long unidadeId,
         String nome,
-        LocalTime horaInicio,
-        LocalTime horaFim,
+        Integer horaInicio,
+        Integer horaFim,
         Boolean atravessaMeiaNoite,
         LocalDateTime dataCriacao,
         Boolean estaAtivo

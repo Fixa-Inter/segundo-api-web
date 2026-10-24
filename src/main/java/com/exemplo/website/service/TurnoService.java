@@ -3,25 +3,28 @@ package com.exemplo.website.service;
 import com.exemplo.website.dto.turno.TurnoRequest;
 import com.exemplo.website.dto.turno.TurnoResponse;
 import com.exemplo.website.dto.turno.TurnoUpdateRequest;
-import com.exemplo.website.model.Endereco;
+import com.exemplo.website.model.Unidade;
 import com.exemplo.website.model.Turno;
-import com.exemplo.website.repository.EnderecoRepository;
+import com.exemplo.website.repository.UnidadeRepository;
 import com.exemplo.website.repository.TurnoRepository;
+import com.exemplo.website.security.AccessPolicyService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalTime;
 import java.util.List;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class TurnoService {
 
-    private final EnderecoRepository enderecoRepository;
+    private final UnidadeRepository unidadeRepository;
     private final TurnoRepository turnoRepository;
+    private final AccessPolicyService accessPolicyService;
 
-    public TurnoResponse cadastrar(TurnoRequest request) {
+    public TurnoResponse cadastrar(TurnoRequest request, Long usuarioAutenticadoId) {
 
         validarHoras(
                 request.horaInicio(),
@@ -29,18 +32,20 @@ public class TurnoService {
                 request.atravessaMeiaNoite()
         );
 
-        Endereco endereco =
-                enderecoRepository
-                        .findById(request.enderecoId())
+        Unidade unidade =
+                unidadeRepository
+                        .findById(request.unidadeId())
                         .orElseThrow(() ->
                                 new EntityNotFoundException(
-                                        "Endereço não encontrado"
+                                        "Unidade não encontrada"
                                 )
                         );
 
+        accessPolicyService.exigirAcessoUnidade(usuarioAutenticadoId, unidade.getId());
+
         Turno turno = new Turno();
 
-        turno.setEndereco(endereco);
+        turno.setUnidade(unidade);
         turno.setNome(request.nome().trim());
         turno.setHoraInicio(request.horaInicio());
         turno.setHoraFim(request.horaFim());
@@ -53,61 +58,71 @@ public class TurnoService {
         );
     }
 
-    public List<TurnoResponse> listarTodos() {
-
-        return turnoRepository
-                .findAll()
+    public List<TurnoResponse> listarTodos(Long usuarioAutenticadoId) {
+        List<Turno> turnos = accessPolicyService.ehAdministrador(usuarioAutenticadoId)
+                ? turnoRepository.findAll()
+                : turnoRepository.findByUnidade_Id(accessPolicyService.unidadeDoUsuarioAutenticado(usuarioAutenticadoId));
+        return turnos
                 .stream()
                 .map(this::toResponse)
                 .toList();
     }
 
-    public List<TurnoResponse> listarPorEndereco(
-            Long enderecoId
+    public List<TurnoResponse> listarPorUnidade(
+            Long unidadeId,
+            Long usuarioAutenticadoId
     ) {
 
+        accessPolicyService.exigirAcessoUnidade(usuarioAutenticadoId, unidadeId);
+
         return turnoRepository
-                .findByEndereco_Id(enderecoId)
+                .findByUnidade_Id(unidadeId)
                 .stream()
                 .map(this::toResponse)
                 .toList();
     }
 
-    public TurnoResponse buscarPorId(Long id) {
-        return toResponse(buscarEntidade(id));
+    public TurnoResponse buscarPorId(Long id, Long usuarioAutenticadoId) {
+        Turno turno = buscarEntidade(id);
+        validarAcesso(usuarioAutenticadoId, turno);
+        return toResponse(turno);
     }
 
     public TurnoResponse atualizar(
             Long id,
-            TurnoUpdateRequest request
+            TurnoUpdateRequest request,
+            Long usuarioAutenticadoId
     ) {
 
         Turno turno = buscarEntidade(id);
+        validarAcesso(usuarioAutenticadoId, turno);
 
-        if (request.enderecoId() != null) {
+        if (request.unidadeId() != null) {
 
-            Endereco endereco =
-                    enderecoRepository
-                            .findById(request.enderecoId())
+            Unidade unidade =
+                    unidadeRepository
+                            .findById(request.unidadeId())
                             .orElseThrow(() ->
                                     new EntityNotFoundException(
-                                            "Endereço não encontrado"
+                                            "Unidade não encontrada"
                                     )
                             );
 
-            turno.setEndereco(endereco);
+            accessPolicyService.exigirAcessoUnidade(usuarioAutenticadoId, unidade.getId());
+
+            turno.setUnidade(unidade);
         }
 
         if (request.nome() != null) {
             turno.setNome(request.nome().trim());
         }
 
-        LocalTime inicio =
+        Integer inicio =
                 request.horaInicio() != null
                         ? request.horaInicio()
                         : turno.getHoraInicio();
 
-        LocalTime fim =
+        Integer fim =
                 request.horaFim() != null
                         ? request.horaFim()
                         : turno.getHoraFim();
@@ -129,9 +144,10 @@ public class TurnoService {
         );
     }
 
-    public TurnoResponse ativar(Long id) {
+    public TurnoResponse ativar(Long id, Long usuarioAutenticadoId) {
 
         Turno turno = buscarEntidade(id);
+        validarAcesso(usuarioAutenticadoId, turno);
 
         turno.setEstaAtivo(true);
 
@@ -140,9 +156,10 @@ public class TurnoService {
         );
     }
 
-    public TurnoResponse desativar(Long id) {
+    public TurnoResponse desativar(Long id, Long usuarioAutenticadoId) {
 
         Turno turno = buscarEntidade(id);
+        validarAcesso(usuarioAutenticadoId, turno);
 
         turno.setEstaAtivo(false);
 
@@ -162,9 +179,13 @@ public class TurnoService {
                 );
     }
 
+    private void validarAcesso(Long usuarioAutenticadoId, Turno turno) {
+        accessPolicyService.exigirAcessoUnidade(usuarioAutenticadoId, turno.getUnidade().getId());
+    }
+
     private void validarHoras(
-            LocalTime horaInicio,
-            LocalTime horaFim,
+            Integer horaInicio,
+            Integer horaFim,
             Boolean atravessaMeiaNoite
     ) {
 
@@ -183,13 +204,19 @@ public class TurnoService {
             );
         }
 
+        if (horaInicio < 0 || horaInicio > 86400 || horaFim < 0 || horaFim > 86400) {
+            throw new IllegalArgumentException(
+                    "Os horários devem ser informados em segundos entre 0 e 86400"
+            );
+        }
+
         if (horaInicio.equals(horaFim)) {
             throw new IllegalArgumentException(
                     "Os horários de início e fim devem ser diferentes"
             );
         }
 
-        boolean horariosAtravessamMeiaNoite = horaFim.isBefore(horaInicio);
+        boolean horariosAtravessamMeiaNoite = horaFim < horaInicio;
 
         if (horariosAtravessamMeiaNoite != atravessaMeiaNoite) {
             throw new IllegalArgumentException(
@@ -202,7 +229,7 @@ public class TurnoService {
 
         return new TurnoResponse(
                 turno.getId(),
-                turno.getEndereco().getId(),
+                turno.getUnidade().getId(),
                 turno.getNome(),
                 turno.getHoraInicio(),
                 turno.getHoraFim(),

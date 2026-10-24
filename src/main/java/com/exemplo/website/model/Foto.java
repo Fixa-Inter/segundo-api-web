@@ -18,8 +18,8 @@ public class Foto {
     @Column(name = "id")
     private Long id;
 
-    @OneToOne(optional = false)
-    @JoinColumn(name = "usuario_id", nullable = false, unique = true)
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "usuario_id", nullable = true)
     private Usuario usuario;
 
     @Column(name = "url", nullable = false)

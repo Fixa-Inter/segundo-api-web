@@ -10,7 +10,8 @@ import lombok.Getter;
 public enum TipoInstituicao {
     ESCOLA("Escola", 1),
     FACULDADE("Faculdade", 2),
-    EMPRESA("Empresa", 3);
+    EMPRESA("Empresa", 3),
+    OUTRO("Outro", 4);
 
     private final String nome;
     private final int id;

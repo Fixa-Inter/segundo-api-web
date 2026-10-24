@@ -11,22 +11,22 @@ import java.time.LocalDate;
 
 public record UsuarioRequest(
 
-        @NotNull(message = "O endereço é obrigatório")
-        Long enderecoId,
+        @NotNull(message = "A unidade é obrigatória")
+        Long unidadeId,
 
         @NotBlank(message = "O nome completo é obrigatório")
         @Size(
                 min = 3,
-                max = 150,
-                message = "O nome completo deve ter entre 3 e 150 caracteres"
+                max = 100,
+                message = "O nome completo deve ter entre 3 e 100 caracteres"
         )
         String nomeCompleto,
 
         @NotBlank(message = "O email é obrigatório")
         @Email(message = "O email informado é inválido")
         @Size(
-                max = 150,
-                message = "O email deve possuir no máximo 150 caracteres"
+                max = 100,
+                message = "O email deve possuir no máximo 100 caracteres"
         )
         String email,
 

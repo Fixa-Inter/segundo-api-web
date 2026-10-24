@@ -17,14 +17,14 @@ public class Instituicao {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "nome", nullable = false)
+    @Column(name = "nome", nullable = false, length = 100)
     private String nome;
 
 
     @Column(name = "tipo_instituicao", nullable = false)
     private TipoInstituicao tipoInstituicao;
 
-    @Column(name = "dominio_email", nullable = false, unique = true)
+    @Column(name = "dominio_email", nullable = false, unique = true, length = 100)
     private String dominioEmail;
 
     @Column(name = "data_criacao", nullable = false)

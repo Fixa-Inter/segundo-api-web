@@ -3,39 +3,46 @@ package com.exemplo.website.service;
 import com.exemplo.website.dto.localendereco.LocalEnderecoRequest;
 import com.exemplo.website.dto.localendereco.LocalEnderecoResponse;
 import com.exemplo.website.dto.localendereco.LocalEnderecoUpdateRequest;
-import com.exemplo.website.model.Endereco;
+import com.exemplo.website.model.Unidade;
 import com.exemplo.website.model.LocalEndereco;
-import com.exemplo.website.repository.EnderecoRepository;
+import com.exemplo.website.repository.UnidadeRepository;
 import com.exemplo.website.repository.LocalEnderecoRepository;
+import com.exemplo.website.security.AccessPolicyService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class LocalEnderecoService {
 
-    private final EnderecoRepository enderecoRepository;
+    private final UnidadeRepository unidadeRepository;
     private final LocalEnderecoRepository localEnderecoRepository;
+    private final AccessPolicyService accessPolicyService;
 
     public LocalEnderecoResponse cadastrar(
-            LocalEnderecoRequest request
+            LocalEnderecoRequest request,
+            Long usuarioAutenticadoId
     ) {
 
-        Endereco endereco =
-                enderecoRepository
-                        .findById(request.enderecoId())
+        Unidade unidade =
+                unidadeRepository
+                        .findById(request.unidadeId())
                         .orElseThrow(() ->
                                 new EntityNotFoundException(
-                                        "Endereço não encontrado"
+                                        "Unidade não encontrada"
                                 )
                         );
 
+        accessPolicyService.exigirAcessoUnidade(usuarioAutenticadoId, unidade.getId());
+
         LocalEndereco local = new LocalEndereco();
 
-        local.setEndereco(endereco);
+        local.setUnidade(unidade);
         local.setNome(request.nome().trim());
         local.setTipoLocalEndereco(
                 request.tipoLocalEndereco()
@@ -49,50 +56,60 @@ public class LocalEnderecoService {
         );
     }
 
-    public List<LocalEnderecoResponse> listarTodos() {
-
-        return localEnderecoRepository
-                .findAll()
+    public List<LocalEnderecoResponse> listarTodos(Long usuarioAutenticadoId) {
+        List<LocalEndereco> locais = accessPolicyService.ehAdministrador(usuarioAutenticadoId)
+                ? localEnderecoRepository.findAll()
+                : localEnderecoRepository.findByUnidade_Id(accessPolicyService.unidadeDoUsuarioAutenticado(usuarioAutenticadoId));
+        return locais
                 .stream()
                 .map(this::toResponse)
                 .toList();
     }
 
-    public List<LocalEnderecoResponse> listarPorEndereco(
-            Long enderecoId
+    public List<LocalEnderecoResponse> listarPorUnidade(
+            Long unidadeId,
+            Long usuarioAutenticadoId
     ) {
 
+        accessPolicyService.exigirAcessoUnidade(usuarioAutenticadoId, unidadeId);
+
         return localEnderecoRepository
-                .findByEndereco_Id(enderecoId)
+                .findByUnidade_Id(unidadeId)
                 .stream()
                 .map(this::toResponse)
                 .toList();
     }
 
-    public LocalEnderecoResponse buscarPorId(Long id) {
-        return toResponse(buscarEntidade(id));
+    public LocalEnderecoResponse buscarPorId(Long id, Long usuarioAutenticadoId) {
+        LocalEndereco local = buscarEntidade(id);
+        validarAcesso(usuarioAutenticadoId, local);
+        return toResponse(local);
     }
 
     public LocalEnderecoResponse atualizar(
             Long id,
-            LocalEnderecoUpdateRequest request
+            LocalEnderecoUpdateRequest request,
+            Long usuarioAutenticadoId
     ) {
 
         LocalEndereco local =
                 buscarEntidade(id);
+        validarAcesso(usuarioAutenticadoId, local);
 
-        if (request.enderecoId() != null) {
+        if (request.unidadeId() != null) {
 
-            Endereco endereco =
-                    enderecoRepository
-                            .findById(request.enderecoId())
+            Unidade unidade =
+                    unidadeRepository
+                            .findById(request.unidadeId())
                             .orElseThrow(() ->
                                     new EntityNotFoundException(
-                                            "Endereço não encontrado"
+                                            "Unidade não encontrada"
                                     )
                             );
 
-            local.setEndereco(endereco);
+            accessPolicyService.exigirAcessoUnidade(usuarioAutenticadoId, unidade.getId());
+
+            local.setUnidade(unidade);
         }
 
         if (request.nome() != null) {
@@ -116,10 +133,11 @@ public class LocalEnderecoService {
         );
     }
 
-    public LocalEnderecoResponse ativar(Long id) {
+    public LocalEnderecoResponse ativar(Long id, Long usuarioAutenticadoId) {
 
         LocalEndereco local =
                 buscarEntidade(id);
+        validarAcesso(usuarioAutenticadoId, local);
 
         local.setEstaAtivo(true);
 
@@ -128,10 +146,11 @@ public class LocalEnderecoService {
         );
     }
 
-    public LocalEnderecoResponse desativar(Long id) {
+    public LocalEnderecoResponse desativar(Long id, Long usuarioAutenticadoId) {
 
         LocalEndereco local =
                 buscarEntidade(id);
+        validarAcesso(usuarioAutenticadoId, local);
 
         local.setEstaAtivo(false);
 
@@ -151,13 +170,17 @@ public class LocalEnderecoService {
                 );
     }
 
+    private void validarAcesso(Long usuarioAutenticadoId, LocalEndereco local) {
+        accessPolicyService.exigirAcessoUnidade(usuarioAutenticadoId, local.getUnidade().getId());
+    }
+
     private LocalEnderecoResponse toResponse(
             LocalEndereco local
     ) {
 
         return new LocalEnderecoResponse(
                 local.getId(),
-                local.getEndereco().getId(),
+                local.getUnidade().getId(),
                 local.getNome(),
                 local.getTipoLocalEndereco(),
                 local.getDescricao(),
