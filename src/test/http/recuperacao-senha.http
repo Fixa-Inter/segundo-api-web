@@ -1,0 +1,19 @@
+### 12. Recuperação de senha — exige email cadastrado e acesso à caixa de teste
+
+### Solicitar código (a API envia o código por email)
+POST http://localhost:8080/auth/recuperar-senha
+Content-Type: application/json
+
+{
+  "email": "gestor.teste@teste-api.example.org"
+}
+
+### Confirmar código recebido e definir nova senha
+POST http://localhost:8080/auth/recuperar-senha/confirmar
+Content-Type: application/json
+
+{
+  "email": "gestor.teste@teste-api.example.org",
+  "codigo": 123456,
+  "novaSenha": "NovaSenhaTeste123"
+}

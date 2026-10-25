@@ -1,0 +1,43 @@
+### 1. Autenticação
+### Login — salva os tokens para as próximas requisições
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin.teste@example.org",
+  "senha": "TroqueEstaSenha123",
+  "cnpj": "11222333000181"
+}
+> {% client.global.set("token", response.body.token); client.global.set("refreshToken", response.body.refreshToken); client.global.set("usuarioId", response.body.usuarioId); %}
+
+### Ver dados do token autenticado
+GET http://localhost:8080/auth/me
+Authorization: Bearer {{token}}
+
+### Renovar access token
+POST http://localhost:8080/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+> {% client.global.set("token", response.body.token); client.global.set("refreshToken", response.body.refreshToken); %}
+
+### Alterar senha (troque os valores; exige a senha atual)
+POST http://localhost:8080/auth/alterar-senha
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "senhaAtual": "TroqueEstaSenha123",
+  "novaSenha": "NovaSenhaTeste123",
+  "confirmarNovaSenha": "NovaSenhaTeste123"
+}
+
+### Logout — invalida o refresh token usado
+POST http://localhost:8080/auth/logout
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}

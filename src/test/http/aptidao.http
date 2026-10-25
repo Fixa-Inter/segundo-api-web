@@ -1,0 +1,38 @@
+### 8. Aptidão (GESTOR/ADMINISTRADOR) — depende de um usuário existente
+
+### Cadastrar
+POST http://localhost:8080/api/v1/aptidoes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "usuarioId": {{usuarioId}},
+  "categoriaProblema": "INFORMATICA",
+  "nota": 8.5
+}
+> {% client.global.set("aptidaoId", response.body.id); %}
+
+### Listar aptidões do usuário
+GET http://localhost:8080/api/v1/aptidoes?usuarioId={{usuarioId}}
+Authorization: Bearer {{token}}
+
+### Buscar por ID
+GET http://localhost:8080/api/v1/aptidoes/{{aptidaoId}}
+Authorization: Bearer {{token}}
+
+### Atualizar nota
+PATCH http://localhost:8080/api/v1/aptidoes/{{aptidaoId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "nota": 9.0
+}
+
+### Desativar / ativar (opcional; altera estado do registro)
+PATCH http://localhost:8080/api/v1/aptidoes/{{aptidaoId}}/desativar
+Authorization: Bearer {{token}}
+
+###
+PATCH http://localhost:8080/api/v1/aptidoes/{{aptidaoId}}/ativar
+Authorization: Bearer {{token}}

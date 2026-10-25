@@ -1,0 +1,38 @@
+### 2. Instituição (ADMINISTRADOR) — execute após o login em auth.http
+
+### Cadastrar
+POST http://localhost:8080/api/v1/instituicoes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "nome": "Instituição Teste API",
+  "tipoInstituicao": "ESCOLA",
+  "dominioEmail": "teste-api.example.org"
+}
+> {% client.global.set("instituicaoId", response.body.id); %}
+
+### Listar
+GET http://localhost:8080/api/v1/instituicoes
+Authorization: Bearer {{token}}
+
+### Buscar por ID criado acima
+GET http://localhost:8080/api/v1/instituicoes/{{instituicaoId}}
+Authorization: Bearer {{token}}
+
+### Atualizar parcialmente
+PATCH http://localhost:8080/api/v1/instituicoes/{{instituicaoId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "nome": "Instituição Teste API Atualizada"
+}
+
+### Desativar / ativar (opcional; altera estado do registro)
+PATCH http://localhost:8080/api/v1/instituicoes/{{instituicaoId}}/desativar
+Authorization: Bearer {{token}}
+
+###
+PATCH http://localhost:8080/api/v1/instituicoes/{{instituicaoId}}/ativar
+Authorization: Bearer {{token}}

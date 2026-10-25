@@ -1,0 +1,22 @@
+### 6. Vínculo entre turno e usuário (GESTOR/ADMINISTRADOR)
+
+### Vincular usuário ao turno (use IDs criados nos arquivos anteriores)
+POST http://localhost:8080/api/v1/turnos/{{turnoId}}/usuarios/{{usuarioId}}
+Authorization: Bearer {{token}}
+> {% client.global.set("turnoUsuarioId", response.body.id); %}
+
+### Listar usuários vinculados ao turno
+GET http://localhost:8080/api/v1/turnos/{{turnoId}}/usuarios
+Authorization: Bearer {{token}}
+
+### Listar turnos vinculados ao usuário
+GET http://localhost:8080/api/v1/usuarios/{{usuarioId}}/turnos
+Authorization: Bearer {{token}}
+
+### Desativar / ativar vínculo (opcional; altera estado do registro)
+PATCH http://localhost:8080/api/v1/turnos-usuarios/{{turnoUsuarioId}}/desativar
+Authorization: Bearer {{token}}
+
+###
+PATCH http://localhost:8080/api/v1/turnos-usuarios/{{turnoUsuarioId}}/ativar
+Authorization: Bearer {{token}}
