@@ -1,0 +1,39 @@
+### 7. Local de endereço (GESTOR/ADMINISTRADOR) — depende da unidade
+
+### Cadastrar
+POST http://localhost:8080/api/v1/locais
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "unidadeId": {{unidadeId}},
+  "nome": "Laboratório de Informática - teste",
+  "tipoLocalEndereco": "LABORATORIO",
+  "descricao": "Laboratório fictício para validar os endpoints"
+}
+> {% client.global.set("localEnderecoId", response.body.id); %}
+
+### Listar locais da unidade
+GET http://localhost:8080/api/v1/locais?unidadeId={{unidadeId}}
+Authorization: Bearer {{token}}
+
+### Buscar por ID
+GET http://localhost:8080/api/v1/locais/{{localEnderecoId}}
+Authorization: Bearer {{token}}
+
+### Atualizar parcialmente
+PATCH http://localhost:8080/api/v1/locais/{{localEnderecoId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "descricao": "Descrição atualizada para teste"
+}
+
+### Desativar / ativar (opcional; altera estado do registro)
+PATCH http://localhost:8080/api/v1/locais/{{localEnderecoId}}/desativar
+Authorization: Bearer {{token}}
+
+###
+PATCH http://localhost:8080/api/v1/locais/{{localEnderecoId}}/ativar
+Authorization: Bearer {{token}}

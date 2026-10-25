@@ -1,0 +1,35 @@
+### 9. Evento (GESTOR/ADMINISTRADOR) — depende de usuário e local existentes
+
+### Cadastrar evento fictício futuro
+POST http://localhost:8080/api/v1/eventos
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "usuarioId": {{usuarioId}},
+  "localEnderecoId": {{localEnderecoId}},
+  "titulo": "Manutenção preventiva - teste",
+  "descricao": "Evento fictício para validar a API",
+  "descricaoLocal": "Laboratório de Informática",
+  "observacao": "Registro de teste; pode ser removido depois",
+  "dataHoraInicio": "2030-05-20T09:00:00",
+  "dataHoraFim": "2030-05-20T10:00:00"
+}
+> {% client.global.set("eventoId", response.body.id); %}
+
+### Listar eventos (pode filtrar por usuário)
+GET http://localhost:8080/api/v1/eventos?usuarioId={{usuarioId}}
+Authorization: Bearer {{token}}
+
+### Buscar por ID
+GET http://localhost:8080/api/v1/eventos/{{eventoId}}
+Authorization: Bearer {{token}}
+
+### Atualizar parcialmente
+PATCH http://localhost:8080/api/v1/eventos/{{eventoId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "observacao": "Observação atualizada no teste"
+}

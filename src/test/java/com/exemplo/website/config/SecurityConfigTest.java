@@ -16,12 +16,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class SecurityConfigTest {
 
     @Test
-    void passwordEncoderUsesBcrypt2aWithTwelveRounds() {
+    void passwordEncoderUsesBcrypt2yWithTenRounds() {
         PasswordEncoder encoder = new SecurityConfig().passwordEncoder();
         String rawPassword = "SenhaTeste123";
         String encodedPassword = encoder.encode(rawPassword);
 
-        assertTrue(encodedPassword.startsWith("$2a$12$"));
+        assertTrue(encodedPassword.startsWith("$2y$10$"));
         assertTrue(encoder.matches(rawPassword, encodedPassword));
     }
 
@@ -30,7 +30,7 @@ class SecurityConfigTest {
         String rawPassword = "SenhaTeste123";
         String existing2yHash = new BCryptPasswordEncoder(
                 BCryptPasswordEncoder.BCryptVersion.$2Y,
-                12
+                10
         ).encode(rawPassword);
 
         assertTrue(new SecurityConfig().passwordEncoder().matches(rawPassword, existing2yHash));

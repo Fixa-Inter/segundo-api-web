@@ -1,0 +1,14 @@
+### 11. Foto do perfil (autenticado) — este recurso usa PUT, não PATCH
+
+### Consultar foto atual
+GET http://localhost:8080/api/v1/perfil/foto
+Authorization: Bearer {{token}}
+
+### Criar/atualizar URL da foto
+PUT http://localhost:8080/api/v1/perfil/foto
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "url": "https://example.org/imagens/perfil-teste.png"
+}
