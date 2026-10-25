@@ -1,0 +1,14 @@
+### 10. Perfil do usuário autenticado
+
+### Consultar meu perfil
+GET http://localhost:8080/api/v1/perfil
+Authorization: Bearer {{token}}
+
+### Atualizar parcialmente meu perfil
+PATCH http://localhost:8080/api/v1/perfil
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "nomeCompleto": "Usuário de Teste API"
+}

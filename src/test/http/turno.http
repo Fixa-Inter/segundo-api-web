@@ -1,0 +1,40 @@
+### 5. Turno (GESTOR/ADMINISTRADOR) — depende da unidade de unidade.http
+
+### Cadastrar (horários informados em segundos desde 00:00)
+POST http://localhost:8080/api/v1/turnos
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "unidadeId": {{unidadeId}},
+  "nome": "Turno da manhã - teste",
+  "horaInicio": 28800,
+  "horaFim": 43200,
+  "atravessaMeiaNoite": false
+}
+> {% client.global.set("turnoId", response.body.id); %}
+
+### Listar turnos da unidade
+GET http://localhost:8080/api/v1/turnos?unidadeId={{unidadeId}}
+Authorization: Bearer {{token}}
+
+### Buscar por ID
+GET http://localhost:8080/api/v1/turnos/{{turnoId}}
+Authorization: Bearer {{token}}
+
+### Atualizar parcialmente
+PATCH http://localhost:8080/api/v1/turnos/{{turnoId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "nome": "Turno da manhã - atualizado"
+}
+
+### Desativar / ativar (opcional; altera estado do registro)
+PATCH http://localhost:8080/api/v1/turnos/{{turnoId}}/desativar
+Authorization: Bearer {{token}}
+
+###
+PATCH http://localhost:8080/api/v1/turnos/{{turnoId}}/ativar
+Authorization: Bearer {{token}}

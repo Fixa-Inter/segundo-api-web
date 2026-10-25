@@ -1,0 +1,42 @@
+### 4. Usuário (GESTOR/ADMINISTRADOR) — email usa o domínio da instituição de teste
+
+### Cadastrar gestor de exemplo
+POST http://localhost:8080/api/v1/usuarios
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "unidadeId": {{unidadeId}},
+  "nomeCompleto": "Gestor de Teste API",
+  "email": "gestor.teste@teste-api.example.org",
+  "tipoAcesso": "GESTOR",
+  "cargo": "Gestor de unidade",
+  "senha": "SenhaFicticia123",
+  "dataNascimento": "1990-05-20"
+}
+> {% client.global.set("usuarioId", response.body.id); %}
+
+### Listar usuários da unidade
+GET http://localhost:8080/api/v1/usuarios?unidadeId={{unidadeId}}
+Authorization: Bearer {{token}}
+
+### Buscar usuário criado
+GET http://localhost:8080/api/v1/usuarios/{{usuarioId}}
+Authorization: Bearer {{token}}
+
+### Atualizar parcialmente
+PATCH http://localhost:8080/api/v1/usuarios/{{usuarioId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "cargo": "Gestor de unidade - teste"
+}
+
+### Desativar / ativar (opcional; altera estado do registro)
+PATCH http://localhost:8080/api/v1/usuarios/{{usuarioId}}/desativar
+Authorization: Bearer {{token}}
+
+###
+PATCH http://localhost:8080/api/v1/usuarios/{{usuarioId}}/ativar
+Authorization: Bearer {{token}}

@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -41,12 +44,15 @@ public class Unidade {
     @Column(name = "cidade", nullable = false, length = 100)
     private String cidade;
 
+    @JdbcTypeCode(SqlTypes.CHAR)
     @Column(name = "estado", nullable = false, length = 2)
     private String estado;
 
+    @JdbcTypeCode(SqlTypes.CHAR)
     @Column(name = "cep", nullable = false, length = 8)
     private String cep;
 
+    @JdbcTypeCode(SqlTypes.CHAR)
     @Column(name = "cnpj", nullable = false, unique = true, length = 14)
     private String cnpj;
 

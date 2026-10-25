@@ -1,0 +1,45 @@
+### 3. Unidade (ADMINISTRADOR) — depende da instituição criada em instituicao.http
+
+### Cadastrar
+POST http://localhost:8080/api/v1/unidades
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "instituicaoId": {{instituicaoId}},
+  "nome": "Unidade Centro Teste",
+  "logradouro": "Rua de Teste",
+  "numero": "120",
+  "complemento": "Bloco A",
+  "bairro": "Centro",
+  "cidade": "São Paulo",
+  "estado": "SP",
+  "cep": "01001-000",
+  "cnpj": "11222333000181"
+}
+> {% client.global.set("unidadeId", response.body.id); client.global.set("cnpjUnidade", response.body.cnpj); %}
+
+### Listar
+GET http://localhost:8080/api/v1/unidades
+Authorization: Bearer {{token}}
+
+### Buscar por ID
+GET http://localhost:8080/api/v1/unidades/{{unidadeId}}
+Authorization: Bearer {{token}}
+
+### Atualizar parcialmente
+PATCH http://localhost:8080/api/v1/unidades/{{unidadeId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "complemento": "Bloco B"
+}
+
+### Desativar / ativar (opcional; altera estado do registro)
+PATCH http://localhost:8080/api/v1/unidades/{{unidadeId}}/desativar
+Authorization: Bearer {{token}}
+
+###
+PATCH http://localhost:8080/api/v1/unidades/{{unidadeId}}/ativar
+Authorization: Bearer {{token}}

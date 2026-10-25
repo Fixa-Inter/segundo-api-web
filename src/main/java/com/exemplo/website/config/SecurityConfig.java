@@ -30,8 +30,8 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(
-                BCryptPasswordEncoder.BCryptVersion.$2A,
-                12
+                BCryptPasswordEncoder.BCryptVersion.$2Y,
+                10
         );
     }
 
