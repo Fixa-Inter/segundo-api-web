@@ -68,7 +68,7 @@ public class AuthController {
             @Valid @RequestBody AlterarSenhaRequest request
     ) {
         try {
-            long usuarioId = Long.parseLong(jwt.getSubject());
+            long usuarioId = Long.parseLong(jwt.getClaimAsString("userId"));
             authService.alterarSenha(usuarioId, request);
             return ResponseEntity.ok(Map.of("mensagem", "Senha alterada com sucesso"));
         } catch (AuthenticationException exception) {

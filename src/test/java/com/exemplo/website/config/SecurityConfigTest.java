@@ -6,7 +6,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -47,8 +46,9 @@ class SecurityConfigTest {
                 agora.plusSeconds(60),
                 Map.of("alg", "HS256"),
                 Map.of(
-                        "sub", "42",
-                        "roles", List.of("GESTOR")
+                        "sub", "gestor@example.com",
+                        "userId", 42,
+                        "role", "GESTOR"
                 )
         );
 
@@ -57,7 +57,7 @@ class SecurityConfigTest {
                 .convert(jwt);
 
         assertNotNull(authentication);
-        assertEquals("42", authentication.getName());
+        assertEquals("gestor@example.com", authentication.getName());
         assertTrue(
                 authentication.getAuthorities()
                         .stream()

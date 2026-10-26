@@ -8,11 +8,14 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
-import org.springframework.security.oauth2.jwt.JwtValidators;
+import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
+import org.springframework.security.oauth2.core.OAuth2Error;
+import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import java.util.Base64;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 
 @Configuration
 public class JwtConfig {
@@ -21,7 +24,7 @@ public class JwtConfig {
     public SecretKey jwtSecretKey(
             @Value("${security.jwt.secret}") String secret
     ) {
-        byte[] keyBytes = Base64.getDecoder().decode(secret);
+        byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
 
         if (keyBytes.length < 32) {
             throw new IllegalArgumentException(
@@ -29,34 +32,43 @@ public class JwtConfig {
             );
         }
 
-        return new SecretKeySpec(
-                keyBytes,
-                "HmacSHA256"
-        );
+        String algorithm = keyBytes.length >= 64 ? "HmacSHA512"
+                : keyBytes.length >= 48 ? "HmacSHA384" : "HmacSHA256";
+        return new SecretKeySpec(keyBytes, algorithm);
     }
 
     @Bean
-    public JwtEncoder jwtEncoder(SecretKey secretKey) {
+    public MacAlgorithm jwtMacAlgorithm(SecretKey secretKey) {
+        int length = secretKey.getEncoded().length;
+        return length >= 64 ? MacAlgorithm.HS512
+                : length >= 48 ? MacAlgorithm.HS384 : MacAlgorithm.HS256;
+    }
+
+    @Bean
+    public JwtEncoder jwtEncoder(SecretKey secretKey, MacAlgorithm jwtMacAlgorithm) {
         return NimbusJwtEncoder
                 .withSecretKey(secretKey)
-                .algorithm(MacAlgorithm.HS256)
+                .algorithm(jwtMacAlgorithm)
                 .build();
     }
 
     @Bean
-    public JwtDecoder jwtDecoder(SecretKey secretKey) {
+    public JwtDecoder jwtDecoder(SecretKey secretKey, MacAlgorithm jwtMacAlgorithm) {
 
         NimbusJwtDecoder decoder =
                 NimbusJwtDecoder
                         .withSecretKey(secretKey)
-                        .macAlgorithm(MacAlgorithm.HS256)
+                        .macAlgorithm(jwtMacAlgorithm)
                         .build();
 
-        decoder.setJwtValidator(
-                JwtValidators.createDefaultWithIssuer(
-                        "segundo-api-web"
-                )
-        );
+        decoder.setJwtValidator(jwt -> {
+            if (jwt.getExpiresAt() == null) {
+                return OAuth2TokenValidatorResult.failure(
+                        new OAuth2Error("invalid_token", "JWT sem expiração", null)
+                );
+            }
+            return new JwtTimestampValidator(Duration.ZERO).validate(jwt);
+        });
 
         return decoder;
     }

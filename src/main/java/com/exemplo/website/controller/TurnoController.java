@@ -98,7 +98,7 @@ public class TurnoController {
 
     private Long usuarioId(Jwt jwt) {
         try {
-            return Long.valueOf(jwt.getSubject());
+            return Long.valueOf(jwt.getClaimAsString("userId"));
         } catch (NumberFormatException exception) {
             throw new IllegalArgumentException("Token não possui um identificador de usuário válido", exception);
         }
