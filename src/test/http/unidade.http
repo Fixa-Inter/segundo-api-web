@@ -23,6 +23,10 @@ Content-Type: application/json
 GET http://localhost:8080/api/v1/unidades
 Authorization: Bearer {{token}}
 
+### Listar as filiais de uma instituição
+GET http://localhost:8080/api/v1/unidades?instituicaoId={{instituicaoId}}
+Authorization: Bearer {{token}}
+
 ### Buscar por ID
 GET http://localhost:8080/api/v1/unidades/{{unidadeId}}
 Authorization: Bearer {{token}}

@@ -40,7 +40,7 @@ public class Usuario {
     @Column(name = "cargo", nullable = false, length = 100)
     private String cargo;
 
-    @Column(name = "senha_hash", nullable = false)
+    @Column(name = "senha_hash", nullable = false, length = 255)
     private String senhaHash;
 
     @Column(name = "data_nascimento", nullable = false)

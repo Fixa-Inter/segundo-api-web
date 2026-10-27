@@ -30,13 +30,13 @@ public class Evento {
     @Column(name = "titulo", nullable = false, length = 100)
     private String titulo;
 
-    @Column(name = "descricao", nullable = false)
+    @Column(name = "descricao", nullable = false, length = 255)
     private String descricao;
 
-    @Column(name = "descricao_local", nullable = false)
+    @Column(name = "descricao_local", nullable = false, length = 255)
     private String descricaoLocal;
 
-    @Column(name = "observacao")
+    @Column(name = "observacao", length = 255)
     private String observacao;
 
     @Column(name = "data_hora_inicio", nullable = false)

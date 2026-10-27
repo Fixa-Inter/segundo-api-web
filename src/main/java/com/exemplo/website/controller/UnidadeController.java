@@ -39,7 +39,13 @@ public class UnidadeController {
 
     @GetMapping
     public ResponseEntity<List<UnidadeResponse>>
-    listarTodos() {
+    listarTodos(@RequestParam(required = false) Long instituicaoId) {
+
+        if (instituicaoId != null) {
+            return ResponseEntity.ok(
+                    unidadeService.listarPorInstituicao(instituicaoId)
+            );
+        }
 
         return ResponseEntity.ok(
                 unidadeService.listarTodos()

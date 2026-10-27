@@ -22,7 +22,7 @@ public class Foto {
     @JoinColumn(name = "usuario_id", nullable = true)
     private Usuario usuario;
 
-    @Column(name = "url", nullable = false)
+    @Column(name = "url", nullable = false, length = 255)
     private String url;
 
 }

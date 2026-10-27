@@ -52,6 +52,15 @@ public class UnidadeService {
                 .toList();
     }
 
+    public List<UnidadeResponse> listarPorInstituicao(Long instituicaoId) {
+        buscarInstituicao(instituicaoId);
+        return unidadeRepository
+                .findByInstituicao_Id(instituicaoId)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
     public UnidadeResponse buscarPorId(Long id) {
         return toResponse(buscarEntidade(id));
     }
