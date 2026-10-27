@@ -32,7 +32,7 @@ public class LocalEndereco {
     @Column(name = "tipo_local_unidade", nullable = false)
     private TipoLocalEndereco tipoLocalEndereco;
 
-    @Column(name = "descricao", nullable = false)
+    @Column(name = "descricao", nullable = false, length = 255)
     private String descricao;
 
     @Column(name = "data_criacao", nullable = false)
