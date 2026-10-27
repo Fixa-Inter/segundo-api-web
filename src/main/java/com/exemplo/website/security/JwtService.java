@@ -11,21 +11,23 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.security.SecureRandom;
 import java.util.Base64;
-import java.util.List;
 
 @Service
 public class JwtService {
 
     private final JwtEncoder jwtEncoder;
+    private final MacAlgorithm jwtMacAlgorithm;
     private final long expirationSeconds;
     private final SecureRandom secureRandom = new SecureRandom();
 
     public JwtService(
             JwtEncoder jwtEncoder,
+            MacAlgorithm jwtMacAlgorithm,
             @Value("${security.jwt.expiration-seconds}")
             long expirationSeconds
     ) {
         this.jwtEncoder = jwtEncoder;
+        this.jwtMacAlgorithm = jwtMacAlgorithm;
         this.expirationSeconds = expirationSeconds;
     }
 
@@ -44,19 +46,13 @@ public class JwtService {
                 .expiresAt(
                         agora.plusSeconds(expirationSeconds)
                 )
-                .subject(
-                        principal.getUsuario()
-                                .getId()
-                                .toString()
-                )
-                .claim(
-                        "roles",
-                        List.of(tipoAcesso)
-                )
+                .subject(principal.getUsuario().getEmail())
+                .claim("userId", principal.getUsuario().getId())
+                .claim("role", tipoAcesso)
                 .build();
 
         JwsHeader header =
-                JwsHeader.with(MacAlgorithm.HS256)
+                JwsHeader.with(jwtMacAlgorithm)
                         .build();
 
         return jwtEncoder
