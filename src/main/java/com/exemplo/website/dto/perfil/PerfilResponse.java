@@ -12,6 +12,7 @@ public record PerfilResponse(
         TipoAcesso tipoAcesso,
         String cargo,
         LocalDate dataNascimento,
+        Long unidadeId,
         FotoResponse foto
 ) {
 }

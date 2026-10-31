@@ -24,6 +24,7 @@ public class WebsiteOpenApiCustomizer implements OpenApiCustomizer {
             Map.entry("Foto de perfil", "Consulta, atualização e remoção da própria foto de perfil."),
             Map.entry("Locais", "Locais cadastrados dentro das unidades."),
             Map.entry("Perfil", "Consulta e edição do perfil do usuário autenticado."),
+            Map.entry("Dashboard", "Acesso ao dashboard embutido, filtrado pela unidade do usuário."),
             Map.entry("Turnos", "Cadastro, consulta e ativação de turnos."),
             Map.entry("Vínculos de turnos", "Vínculo de usuários a turnos e consultas relacionadas."),
             Map.entry("Unidades", "Cadastro e administração de unidades e seus endereços."),

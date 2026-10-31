@@ -101,4 +101,13 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("erro", "Erro interno ao processar a requisição"));
     }
+
+    @ExceptionHandler(DatabricksIntegrationException.class)
+    public ResponseEntity<Map<String, String>> tratarFalhaDatabricks(
+            DatabricksIntegrationException exception
+    ) {
+        LOGGER.error("Falha ao gerar token de embed do Databricks", exception);
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                .body(Map.of("erro", "Não foi possível obter o acesso ao dashboard no momento"));
+    }
 }
