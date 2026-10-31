@@ -80,6 +80,7 @@ public class PerfilService {
                 usuario.getTipoAcesso(),
                 usuario.getCargo(),
                 usuario.getDataNascimento(),
+                usuario.getUnidade().getId(),
                 fotoResponse
         );
     }

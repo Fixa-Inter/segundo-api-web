@@ -17,6 +17,7 @@ final class WebsiteSwaggerCatalog {
                 FotoSwagger.endpoints(),
                 LocalEnderecoSwagger.endpoints(),
                 PerfilSwagger.endpoints(),
+                DashboardSwagger.endpoints(),
                 TurnoSwagger.endpoints(),
                 TurnoUsuarioSwagger.endpoints(),
                 UnidadeSwagger.endpoints(),
