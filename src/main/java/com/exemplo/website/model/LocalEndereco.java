@@ -38,14 +38,26 @@ public class LocalEndereco {
     @Column(name = "data_criacao", nullable = false)
     private LocalDateTime dataCriacao;
 
+    @Column(name = "data_atualizacao")
+    private LocalDateTime dataAtualizacao;
+
     @Column(name = "esta_ativo", nullable = false)
     private Boolean estaAtivo = true;
 
 
     @PrePersist
-    private void preencherDataCriacao() {
+    private void preencherDatas() {
+        LocalDateTime agora = LocalDateTime.now();
         if (dataCriacao == null) {
-            dataCriacao = LocalDateTime.now();
+            dataCriacao = agora;
         }
+        if (dataAtualizacao == null) {
+            dataAtualizacao = agora;
+        }
+    }
+
+    @PreUpdate
+    private void atualizarDataAtualizacao() {
+        dataAtualizacao = LocalDateTime.now();
     }
 }
