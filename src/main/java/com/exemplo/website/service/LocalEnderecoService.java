@@ -185,6 +185,7 @@ public class LocalEnderecoService {
                 local.getTipoLocalEndereco(),
                 local.getDescricao(),
                 local.getDataCriacao(),
+                local.getDataAtualizacao(),
                 local.getEstaAtivo()
         );
     }

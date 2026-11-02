@@ -11,6 +11,7 @@ public record LocalEnderecoResponse(
         TipoLocalEndereco tipoLocalEndereco,
         String descricao,
         LocalDateTime dataCriacao,
+        LocalDateTime dataAtualizacao,
         Boolean estaAtivo
 ) {
 }
