@@ -89,6 +89,15 @@ public class LocalEnderecoController {
         );
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> excluir(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        localEnderecoService.desativar(id, usuarioId(jwt));
+        return ResponseEntity.noContent().build();
+    }
+
     @PatchMapping("/{id}/desativar")
     public ResponseEntity<LocalEnderecoResponse> desativar(
             @PathVariable Long id,

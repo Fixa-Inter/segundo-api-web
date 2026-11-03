@@ -37,3 +37,11 @@ Authorization: Bearer {{token}}
 ###
 PATCH http://localhost:8080/api/v1/locais/{{localEnderecoId}}/ativar
 Authorization: Bearer {{token}}
+
+### Excluir logicamente o local de teste (retorna 204)
+DELETE http://localhost:8080/api/v1/locais/{{localEnderecoId}}
+Authorization: Bearer {{token}}
+
+### Confirmar que o local foi desativado
+GET http://localhost:8080/api/v1/locais/{{localEnderecoId}}
+Authorization: Bearer {{token}}
