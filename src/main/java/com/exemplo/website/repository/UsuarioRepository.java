@@ -27,6 +27,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     List<Usuario> findByUnidade_Id(Long unidadeId);
 
+    List<Usuario> findByUnidade_IdAndEstaAtivoTrue(Long unidadeId);
+
     List<Usuario> findByUnidade_IdAndTipoAcesso(
             Long unidadeId,
             TipoAcesso tipoAcesso
