@@ -10,8 +10,9 @@ import com.exemplo.website.repository.EventoRepository;
 import com.exemplo.website.repository.LocalEnderecoRepository;
 import com.exemplo.website.repository.UsuarioRepository;
 import com.exemplo.website.security.AccessPolicyService;
+import com.exemplo.website.domain.service.NotificacaoSender;
 import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,13 +21,28 @@ import java.util.List;
 
 @Service
 @Transactional
-@RequiredArgsConstructor
 public class EventoService {
 
     private final EventoRepository eventoRepository;
     private final LocalEnderecoRepository localEnderecoRepository;
     private final UsuarioRepository usuarioRepository;
     private final AccessPolicyService accessPolicyService;
+    private final NotificacaoSender notificacaoSender;
+
+    @Autowired
+    public EventoService(
+            EventoRepository eventoRepository,
+            LocalEnderecoRepository localEnderecoRepository,
+            UsuarioRepository usuarioRepository,
+            AccessPolicyService accessPolicyService,
+            NotificacaoSender notificacaoSender
+    ) {
+        this.eventoRepository = eventoRepository;
+        this.localEnderecoRepository = localEnderecoRepository;
+        this.usuarioRepository = usuarioRepository;
+        this.accessPolicyService = accessPolicyService;
+        this.notificacaoSender = notificacaoSender;
+    }
 
     public EventoResponse cadastrar(EventoRequest request, Long usuarioAutenticadoId) {
 
@@ -75,7 +91,17 @@ public class EventoService {
                 request.dataHoraFim()
         );
 
-        return toResponse(eventoRepository.save(evento));
+        Evento criado = eventoRepository.save(evento);
+        String mensagem = "Novo evento: " + criado.getTitulo() + ".";
+        usuarioRepository.findByUnidade_IdAndEstaAtivoTrue(localEndereco.getUnidade().getId())
+                .forEach(destinatario -> notificacaoSender.notificarAposPersistencia(
+                        destinatario.getId(),
+                        1,
+                        criado.getId(),
+                        mensagem
+                ));
+
+        return toResponse(criado);
     }
 
     public List<EventoResponse> listarTodos(Long usuarioAutenticadoId) {

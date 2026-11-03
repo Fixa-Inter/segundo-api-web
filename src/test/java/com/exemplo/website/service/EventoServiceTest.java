@@ -10,6 +10,7 @@ import com.exemplo.website.repository.EventoRepository;
 import com.exemplo.website.repository.LocalEnderecoRepository;
 import com.exemplo.website.repository.UsuarioRepository;
 import com.exemplo.website.security.AccessPolicyService;
+import com.exemplo.website.domain.service.NotificacaoSender;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,8 +28,9 @@ class EventoServiceTest {
     private final LocalEnderecoRepository localRepository = mock(LocalEnderecoRepository.class);
     private final UsuarioRepository usuarioRepository = mock(UsuarioRepository.class);
     private final AccessPolicyService accessPolicyService = mock(AccessPolicyService.class);
+    private final NotificacaoSender notificacaoSender = mock(NotificacaoSender.class);
     private final EventoService service = new EventoService(
-            eventoRepository, localRepository, usuarioRepository, accessPolicyService);
+            eventoRepository, localRepository, usuarioRepository, accessPolicyService, notificacaoSender);
 
     private Usuario usuario;
     private LocalEndereco local;
